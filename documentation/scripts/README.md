@@ -69,13 +69,31 @@ Arrête tous les conteneurs et supprime les volumes ainsi que les images spécif
 
 ---
 
-## 🧪 Tests de Composants (Internes/Docker)
-*Ces scripts s'exécutent via `docker exec` pour valider l'état interne des services.*
+---
+## 🛠️ Scripts de Procédures Administratives (etcd)
+*Ces scripts permettent d'exécuter localement les procédures documentées dans `documentation/procedures/etcd/`.*
 
-- [test_dck_etcd.sh](../../scripts/tests/test_dck_etcd.sh) : Santé du cluster et liste des membres.
-- [test_dck_haproxy.sh](../../scripts/tests/test_dck_haproxy.sh) : État du processus et accès API Stats locale.
-- [test_dck_patroni.sh](../../scripts/tests/test_dck_patroni.sh) : État de Supervisor, écoute des ports et erreurs de logs.
-- [test_dck_pgbouncer.sh](../../scripts/tests/test_dck_pgbouncer.sh) : État du processus et routage via les pools RW/RO.
+| Script | Procédure Documentée | Description |
+| :--- | :--- | :--- |
+| [backup_full.sh](../../scripts/procedures/etcd/backup_full.sh) | [Snapshot Full](../procedures/etcd/backup_full.md) | Sauvegarde complète de la base etcd. |
+| [backup_incremental.sh](../../scripts/procedures/etcd/backup_incremental.sh) | [Sauvegarde Incr.](../procedures/etcd/backup_incremental.md) | Capture du flux de mutations via `watch`. |
+| [diagnostic.sh](../../scripts/procedures/etcd/diagnostic.sh) | [Diagnostic](../procedures/etcd/diagnostic.md) | Santé du cluster, Leader et endpoint status. |
+| [maintenance_defrag.sh](../../scripts/procedures/etcd/maintenance_defrag.sh) | [Défragmentation](../procedures/etcd/maintenance_defrag.md) | Optimisation de l'espace disque. |
+| [maintenance_hash_check.sh](../../scripts/procedures/etcd/maintenance_hash_check.sh) | [Hash Check](../procedures/etcd/maintenance_hash_check.md) | Vérification de corruption des données. |
+| [member_remove.sh](../../scripts/procedures/etcd/member_remove.sh) | [Retrait Nœud](../procedures/etcd/member_remove.md) | Suppression propre d'un membre. |
+| [member_reset_zombie.sh](../../scripts/procedures/etcd/member_reset_zombie.sh) | [Reset Zombie](../procedures/etcd/member_reset_zombie.md) | Réinitialisation d'un nœud corrompu. |
+| [member_swap.sh](../../scripts/procedures/etcd/member_swap.sh) | [Swap Nœud](../procedures/etcd/member_swap.md) | Remplacement d'un membre (ex: changement IP). |
+| [rbac_admin.sh](../../scripts/procedures/etcd/rbac_admin.sh) | [Gestion RBAC](../procedures/etcd/rbac_admin.md) | Configuration utilisateurs, rôles et activation auth. |
+| [restore_full.sh](../../scripts/procedures/etcd/restore_full.sh) | [Restauration Full](../procedures/etcd/restore_full.md) | Disaster recovery à partir d'un snapshot. |
+| [restore_incremental.sh](../../scripts/procedures/etcd/restore_incremental.sh) | [Restauration Incr.](../procedures/etcd/restore_incremental.md) | Rejeu des logs de mutations. |
+| [update_system.sh](../../scripts/procedures/etcd/update_system.sh) | [Mise à jour](../procedures/etcd/update_system.md) | Mise à jour séquentielle avec transfert de leader. |
+
+> [!NOTE]
+> Tous ces scripts partagent une configuration commune via [common.sh](../../scripts/procedures/common.sh) (chargement du `.env` et configuration TLS).
+
+---
+
+## 🧪 Tests de Composants (Internes/Docker)
 
 ---
 [Retour à l'accueil](../../README.md)

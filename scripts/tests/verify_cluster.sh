@@ -32,20 +32,33 @@ echo -e "\n--- 🐳 Tests Internes (Containers) ---"
 
 # 4. Test de Charge Rapide (Stress Test)
 echo -e "\n--- ⚡ Test de Charge Rapide (Stress) ---"
-python3 scripts/tests/stress_test.py --type haproxy --host localhost --port ${EXT_HAPROXY_RW_PORT} --threads 2 --max-req 5 --delay 0.1
+docker exec node1 env CERT_DIR=/etc/patroni/certs python3 /scripts/tests/stress_test.py --type haproxy --host haproxy --port ${INT_HAPROXY_RW_PORT} --threads 2 --max-req 5 --delay 0.1
 
 # 5. Test de Bascule (Failover)
 echo -e "\n--- 🏁 [HA] Test de bascule (Failover) ---"
-LEADER=$(docker exec node1 curl -s -k -u ${PATRONI_API_USER}:${PATRONI_API_PASSWORD} https://localhost:${INT_PATRONI_PORT}/primary | grep -oP '(?<="name":")[^"]+')
+
+MAX_RETRIES=5
+RETRY_COUNT=0
+LEADER=""
+
+while [ $RETRY_COUNT -lt $MAX_RETRIES ]; do
+    LEADER=$(docker exec node1 curl -s -k -u ${PATRONI_API_USER}:${PATRONI_API_PASSWORD} https://localhost:${INT_PATRONI_PORT}/primary | grep -oP '(?<="name":")[^"]+' || true)
+    if [ -n "$LEADER" ]; then
+        break
+    fi
+    echo "⏳ Attente du leader (essai $((RETRY_COUNT+1))/$MAX_RETRIES)..."
+    sleep 10
+    RETRY_COUNT=$((RETRY_COUNT+1))
+done
 
 if [ -z "$LEADER" ]; then
-    echo -e "${RED}❌ Impossible de trouver le Leader actuel.${NC}"
+    echo -e "${RED}❌ Impossible de trouver le Leader actuel après $MAX_RETRIES essais.${NC}"
     exit 1
 fi
 
 echo -e "Leader actuel : ${GREEN}$LEADER${NC}. Arrêt..."
 docker stop $LEADER
-sleep 15
+sleep 20
 
 NEW_LEADER=$(docker exec node1 curl -s -k -u ${PATRONI_API_USER}:${PATRONI_API_PASSWORD} https://localhost:${INT_PATRONI_PORT}/primary | grep -oP '(?<="name":")[^"]+')
 

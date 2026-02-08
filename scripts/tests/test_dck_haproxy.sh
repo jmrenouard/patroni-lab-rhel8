@@ -20,7 +20,7 @@ fi
 
 # 2. Test Stats API avec les nouveaux identifiants
 echo -n "📊 Stats API Auth check (Port ${INT_HAPROXY_STATS_PORT})... "
-if docker exec haproxy curl -s -u ${ADMIN_HAPROXY_USER}:${ADMIN_HAPROXY_PASSWORD} http://localhost:${INT_HAPROXY_STATS_PORT}/ | grep -q "HAProxy"; then
+if docker exec haproxy curl -s -k -u ${ADMIN_HAPROXY_USER}:${ADMIN_HAPROXY_PASSWORD} https://localhost:${INT_HAPROXY_STATS_PORT}/ | grep -q "HAProxy"; then
     echo -e "${GREEN}OK${NC}"
 else
     echo -e "${RED}FAIL (Auth ou Port)${NC}"

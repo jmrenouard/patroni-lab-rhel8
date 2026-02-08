@@ -1,6 +1,6 @@
 services:
   etcd1:
-    image: patroni-rhel8:latest
+    image: patroni-rhel8-etcd:latest
     container_name: etcd1
     hostname: etcd1
     entrypoint: /bin/bash /scripts/manage/entrypoint_etcd.sh
@@ -10,6 +10,9 @@ services:
       - INT_ETCD_CLIENT_PORT=${INT_ETCD_CLIENT_PORT}
       - INT_ETCD_PEER_PORT=${INT_ETCD_PEER_PORT}
       - VERIFY_CLIENT_CERT=${VERIFY_CLIENT_CERT}
+    ports:
+      - "${SSH_PORT_ETCD1}:${INT_SSH_PORT}"
+      - "${EXT_ETCD_CLIENT_PORT_ETCD1}:${INT_ETCD_CLIENT_PORT}"
     volumes:
       - ./certs:/certs:ro
       - ./scripts:/scripts:ro
@@ -18,7 +21,7 @@ services:
       - default
 
   etcd2:
-    image: patroni-rhel8:latest
+    image: patroni-rhel8-etcd:latest
     container_name: etcd2
     hostname: etcd2
     entrypoint: /bin/bash /scripts/manage/entrypoint_etcd.sh
@@ -28,6 +31,9 @@ services:
       - INT_ETCD_CLIENT_PORT=${INT_ETCD_CLIENT_PORT}
       - INT_ETCD_PEER_PORT=${INT_ETCD_PEER_PORT}
       - VERIFY_CLIENT_CERT=${VERIFY_CLIENT_CERT}
+    ports:
+      - "${SSH_PORT_ETCD2}:${INT_SSH_PORT}"
+      - "${EXT_ETCD_CLIENT_PORT_ETCD2}:${INT_ETCD_CLIENT_PORT}"
     volumes:
       - ./certs:/certs:ro
       - ./scripts:/scripts:ro
@@ -36,7 +42,7 @@ services:
       - default
 
   etcd3:
-    image: patroni-rhel8:latest
+    image: patroni-rhel8-etcd:latest
     container_name: etcd3
     hostname: etcd3
     entrypoint: /bin/bash /scripts/manage/entrypoint_etcd.sh
@@ -46,6 +52,9 @@ services:
       - INT_ETCD_CLIENT_PORT=${INT_ETCD_CLIENT_PORT}
       - INT_ETCD_PEER_PORT=${INT_ETCD_PEER_PORT}
       - VERIFY_CLIENT_CERT=${VERIFY_CLIENT_CERT}
+    ports:
+      - "${SSH_PORT_ETCD3}:${INT_SSH_PORT}"
+      - "${EXT_ETCD_CLIENT_PORT_ETCD3}:${INT_ETCD_CLIENT_PORT}"
     volumes:
       - ./certs:/certs:ro
       - ./scripts:/scripts:ro
@@ -54,9 +63,11 @@ services:
       - default
 
   node1:
-    image: patroni-rhel8:latest
+    image: patroni-rhel8-postgresql:latest
     container_name: node1
     hostname: node1
+    entrypoint: /bin/bash /scripts/manage/entrypoint_node.sh /usr/local/bin/supervisord -c /etc/supervisord.conf
+    user: root
     env_file: .env
     environment:
       - PATRONI_NAME=node1
@@ -64,11 +75,20 @@ services:
       - PATRONI_TAGS_FAILOVER_PRIORITY=100
       - PATRONI_ETCD3_HOSTS=${ETCD_HOSTS}
       - PATRONI_ETCD3_PROTOCOL=https
-      - PATRONI_ETCD3_CACERT=/certs/ca.crt
-      - PATRONI_ETCD3_CERT=/certs/etcd-client.crt
-      - PATRONI_ETCD3_KEY=/certs/etcd-client.key
+      - PATRONI_ETCD3_CACERT=/etc/patroni/certs/ca.crt
+      - PATRONI_ETCD3_CERT=/etc/patroni/certs/etcd-client.crt
+      - PATRONI_ETCD3_KEY=/etc/patroni/certs/etcd-client.key
       - PATRONI_ETCD3_USERNAME=${ETCD_PATRONI_USER}
       - PATRONI_ETCD3_PASSWORD=${ETCD_PATRONI_PASSWORD}
+      - PATRONI_RESTAPI_CONNECT_ADDRESS=node1:${INT_PATRONI_PORT}
+      - PATRONI_POSTGRESQL_CONNECT_ADDRESS=node1:${INT_PG_PORT}
+      - CACERT_PATH=/etc/patroni/certs/ca.crt
+      - PATRONI_API_CERT=/etc/patroni/certs/patroni-api.crt
+      - PATRONI_API_KEY=/etc/patroni/certs/patroni-api.key
+      - POSTGRES_SERVER_CERT=/etc/patroni/certs/postgresql-server.crt
+      - POSTGRES_SERVER_KEY=/etc/patroni/certs/postgresql-server.key
+      - ETCD_CLIENT_CERT=/etc/patroni/certs/etcd-client.crt
+      - ETCD_CLIENT_KEY=/etc/patroni/certs/etcd-client.key
     ports:
       - "${SSH_PORT_NODE1}:${INT_SSH_PORT}"
       - "${EXT_PG_PORT_NODE1}:${INT_PG_PORT}"
@@ -76,6 +96,7 @@ services:
     volumes:
       - node1_data:/datas
       - ./certs:/certs:ro
+      - ./scripts:/scripts:ro
       - ./patroni/patroni.yml.rendered:/etc/patroni.yml:ro
     depends_on:
       - etcd1
@@ -85,9 +106,11 @@ services:
       - default
 
   node2:
-    image: patroni-rhel8:latest
+    image: patroni-rhel8-postgresql:latest
     container_name: node2
     hostname: node2
+    entrypoint: /bin/bash /scripts/manage/entrypoint_node.sh /usr/local/bin/supervisord -c /etc/supervisord.conf
+    user: root
     env_file: .env
     environment:
       - PATRONI_NAME=node2
@@ -95,11 +118,20 @@ services:
       - PATRONI_TAGS_FAILOVER_PRIORITY=50
       - PATRONI_ETCD3_HOSTS=${ETCD_HOSTS}
       - PATRONI_ETCD3_PROTOCOL=https
-      - PATRONI_ETCD3_CACERT=/certs/ca.crt
-      - PATRONI_ETCD3_CERT=/certs/etcd-client.crt
-      - PATRONI_ETCD3_KEY=/certs/etcd-client.key
+      - PATRONI_ETCD3_CACERT=/etc/patroni/certs/ca.crt
+      - PATRONI_ETCD3_CERT=/etc/patroni/certs/etcd-client.crt
+      - PATRONI_ETCD3_KEY=/etc/patroni/certs/etcd-client.key
       - PATRONI_ETCD3_USERNAME=${ETCD_PATRONI_USER}
       - PATRONI_ETCD3_PASSWORD=${ETCD_PATRONI_PASSWORD}
+      - PATRONI_RESTAPI_CONNECT_ADDRESS=node2:${INT_PATRONI_PORT}
+      - PATRONI_POSTGRESQL_CONNECT_ADDRESS=node2:${INT_PG_PORT}
+      - CACERT_PATH=/etc/patroni/certs/ca.crt
+      - PATRONI_API_CERT=/etc/patroni/certs/patroni-api.crt
+      - PATRONI_API_KEY=/etc/patroni/certs/patroni-api.key
+      - POSTGRES_SERVER_CERT=/etc/patroni/certs/postgresql-server.crt
+      - POSTGRES_SERVER_KEY=/etc/patroni/certs/postgresql-server.key
+      - ETCD_CLIENT_CERT=/etc/patroni/certs/etcd-client.crt
+      - ETCD_CLIENT_KEY=/etc/patroni/certs/etcd-client.key
     ports:
       - "${SSH_PORT_NODE2}:${INT_SSH_PORT}"
       - "${EXT_PG_PORT_NODE2}:${INT_PG_PORT}"
@@ -107,6 +139,7 @@ services:
     volumes:
       - node2_data:/datas
       - ./certs:/certs:ro
+      - ./scripts:/scripts:ro
       - ./patroni/patroni.yml.rendered:/etc/patroni.yml:ro
     depends_on:
       - etcd1
@@ -116,9 +149,11 @@ services:
       - default
 
   node3:
-    image: patroni-rhel8:latest
+    image: patroni-rhel8-postgresql:latest
     container_name: node3
     hostname: node3
+    entrypoint: /bin/bash /scripts/manage/entrypoint_node.sh /usr/local/bin/supervisord -c /etc/supervisord.conf
+    user: root
     env_file: .env
     environment:
       - PATRONI_NAME=node3
@@ -126,11 +161,20 @@ services:
       - PATRONI_TAGS_FAILOVER_PRIORITY=1
       - PATRONI_ETCD3_HOSTS=${ETCD_HOSTS}
       - PATRONI_ETCD3_PROTOCOL=https
-      - PATRONI_ETCD3_CACERT=/certs/ca.crt
-      - PATRONI_ETCD3_CERT=/certs/etcd-client.crt
-      - PATRONI_ETCD3_KEY=/certs/etcd-client.key
+      - PATRONI_ETCD3_CACERT=/etc/patroni/certs/ca.crt
+      - PATRONI_ETCD3_CERT=/etc/patroni/certs/etcd-client.crt
+      - PATRONI_ETCD3_KEY=/etc/patroni/certs/etcd-client.key
       - PATRONI_ETCD3_USERNAME=${ETCD_PATRONI_USER}
       - PATRONI_ETCD3_PASSWORD=${ETCD_PATRONI_PASSWORD}
+      - PATRONI_RESTAPI_CONNECT_ADDRESS=node3:${INT_PATRONI_PORT}
+      - PATRONI_POSTGRESQL_CONNECT_ADDRESS=node3:${INT_PG_PORT}
+      - CACERT_PATH=/etc/patroni/certs/ca.crt
+      - PATRONI_API_CERT=/etc/patroni/certs/patroni-api.crt
+      - PATRONI_API_KEY=/etc/patroni/certs/patroni-api.key
+      - POSTGRES_SERVER_CERT=/etc/patroni/certs/postgresql-server.crt
+      - POSTGRES_SERVER_KEY=/etc/patroni/certs/postgresql-server.key
+      - ETCD_CLIENT_CERT=/etc/patroni/certs/etcd-client.crt
+      - ETCD_CLIENT_KEY=/etc/patroni/certs/etcd-client.key
     ports:
       - "${SSH_PORT_NODE3}:${INT_SSH_PORT}"
       - "${EXT_PG_PORT_NODE3}:${INT_PG_PORT}"
@@ -138,6 +182,7 @@ services:
     volumes:
       - node3_data:/datas
       - ./certs:/certs:ro
+      - ./scripts:/scripts:ro
       - ./patroni/patroni.yml.rendered:/etc/patroni.yml:ro
     depends_on:
       - etcd1
@@ -147,7 +192,7 @@ services:
       - default
 
   haproxy:
-    image: haproxy:latest
+    image: patroni-rhel8-haproxy:latest
     container_name: haproxy
     hostname: haproxy
     depends_on:
@@ -165,17 +210,23 @@ services:
     networks:
       - default
 
-  # PgBouncer - Connection Pooling
   pgbouncer:
-    image: patroni-rhel8:latest
+    image: patroni-rhel8-pgbouncer:latest
     container_name: pgbouncer
-    command: /usr/bin/pgbouncer /etc/pgbouncer/pgbouncer.ini
-    user: postgres
+    hostname: pgbouncer
+    entrypoint: /bin/bash /scripts/manage/entrypoint_node.sh /usr/bin/pgbouncer /etc/pgbouncer/pgbouncer.ini
+    user: root
     env_file: .env
+    environment:
+      - RUN_AS_USER=postgres
+      - CACERT_PATH=/etc/patroni/certs/ca.crt
+      - POSTGRES_SERVER_CERT=/etc/patroni/certs/postgresql-server.crt
+      - POSTGRES_SERVER_KEY=/etc/patroni/certs/postgresql-server.key
     ports:
       - "${EXT_PGBOUNCER_PORT}:${INT_PGBOUNCER_PORT}"
     volumes:
       - ./certs:/certs:ro
+      - ./scripts:/scripts:ro
       - ./pgbouncer/pgbouncer.ini.rendered:/etc/pgbouncer/pgbouncer.ini:ro
       - ./pgbouncer/userlist.txt:/etc/pgbouncer/userlist.txt:rw
     depends_on:

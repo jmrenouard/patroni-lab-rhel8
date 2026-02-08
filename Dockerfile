@@ -1,12 +1,13 @@
 FROM registry.access.redhat.com/ubi8/ubi:latest
 
 # Metadata
-LABEL maintainer="Antigravity"
+LABEL maintainer="Jean-Marie RENOUARD<jmrenouard@gmail.com"
 LABEL description="Patroni RHEL 8 with PostgreSQL 17, Patroni 4.1.0, and ETCD 3.6.7"
 
 # Environmental variables
 ENV TERM=xterm \
     PSQL_VERSION=17 \
+    PATH="/usr/pgsql-17/bin:$PATH" \
     PATRONI_ETCD3_INSECURE=true \
     PATRONI_ETCD3_PROTOCOL=https \
     PYTHONHTTPSVERIFY=0

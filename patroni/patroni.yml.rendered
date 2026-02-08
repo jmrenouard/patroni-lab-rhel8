@@ -21,9 +21,9 @@ restapi:
   username: admin
   password: admin_password
   # Certificats pour le HTTPS sur l'API.
-  certfile: /certs/patroni-api.crt
-  keyfile: /certs/patroni-api.key
-  cafile: /certs/ca.crt
+  certfile: /etc/patroni/certs/patroni-api.crt
+  keyfile: /etc/patroni/certs/patroni-api.key
+  cafile: /etc/patroni/certs/ca.crt
   verify_client: optional
 
 # Configuration de la communication avec ETCD
@@ -40,9 +40,9 @@ etcd3:
   # Désactive la vérification si nécessaire (false recommandé avec CA valide).
   insecure: false
   # Certificats client pour l'authentification mutuelle si activée.
-  cert: /certs/etcd-client.crt
-  key: /certs/etcd-client.key
-  cacert: /certs/ca.crt
+  cert: /etc/patroni/certs/etcd-client.crt
+  key: /etc/patroni/certs/etcd-client.key
+  cacert: /etc/patroni/certs/ca.crt
 
 # Configuration initiale du Distributed Configuration Store (DCS)
 bootstrap:
@@ -88,9 +88,9 @@ postgresql:
     unix_socket_directories: '/var/run/postgresql'
     # --- SÉCURITÉ SSL POSTGRES ---
     ssl: "on"
-    ssl_cert_file: /certs/postgresql-server.crt
-    ssl_key_file: /certs/postgresql-server.key
-    ssl_ca_file: /certs/ca.crt
+    ssl_cert_file: /etc/patroni/certs/postgresql-server.crt
+    ssl_key_file: /etc/patroni/certs/postgresql-server.key
+    ssl_ca_file: /etc/patroni/certs/ca.crt
   # Configuration des accès (HBA) - Forcer le SSL et restreindre le superuser
   pg_hba:
     - host    all             postgres         127.0.0.1/32            md5

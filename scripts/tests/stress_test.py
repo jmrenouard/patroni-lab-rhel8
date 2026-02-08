@@ -35,7 +35,7 @@ def run_stress_client(target_cmd, thread_id, delay, max_req):
         try:
             # Exécution de la commande
             start_time = time.time()
-            result = subprocess.run(target_cmd, shell=True, capture_output=True, text=True, timeout=5)
+            result = subprocess.run(target_cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True, timeout=5)
             duration = time.time() - start_time
             
             with stats_lock:
@@ -75,10 +75,12 @@ def main():
     args = parser.parse_args()
 
     # Définition de la commande de test selon le type
+    cert_dir = os.environ.get("CERT_DIR", "certs")
     if args.type == "pg" or args.type == "haproxy" or args.type == "pgbouncer":
-        cmd = f"psql -h {args.host} -p {args.port} -U {args.user} -d postgres -c 'SELECT 1;' > /dev/null 2>&1"
+        # Commande psql avec SSL requis (compatible avec le frontend HAProxy et le backend PG)
+        cmd = f"psql \"host={args.host} port={args.port} dbname=postgres user={args.user} sslmode=require\" -c 'SELECT 1;'"
     elif args.type == "etcd":
-        cmd = f"etcdctl --endpoints=https://{args.host}:{args.port} --cacert=certs/ca.crt --cert=certs/etcd-client.crt --key=certs/etcd-client.key endpoint health > /dev/null 2>&1"
+        cmd = f"etcdctl --endpoints=https://{args.host}:{args.port} --cacert={cert_dir}/ca.crt --cert={cert_dir}/etcd-client.crt --key={cert_dir}/etcd-client.key endpoint health"
 
     print(f"🚀 Démarrage du stress test sur {YELLOW}{args.type}{NC} ({args.host}:{args.port})")
     print(f"🧵 Threads: {args.threads} | Pause: {args.delay}s | Durée: {args.duration if args.duration > 0 else '∞'}s")

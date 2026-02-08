@@ -25,7 +25,7 @@ unset ETCD_INITIAL_CLUSTER_STATE
 # Construction des arguments de sécurité
 AUTH_FLAGS=""
 if [ "${VERIFY_CLIENT_CERT}" = "true" ]; then
-    AUTH_FLAGS="--client-cert-auth --peer-client-cert-auth"
+    AUTH_FLAGS="--peer-client-cert-auth"
 fi
 
 # Construction de la commande ETCD avec les variables d'environnement

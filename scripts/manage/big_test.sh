@@ -23,6 +23,14 @@ log_step() {
     local status=$3
     local output=$4
     
+    # Validation supplémentaire : recherche de mots clés d'erreur dans l'output
+    if echo "$output" | grep -qiE "error|warning|fatal|critical|fail"; then
+        if [ "$status" == "OK" ]; then
+            echo -e "${RED}⚠️  Alertes détectées dans l'output de $title${NC}"
+            status="FAIL"
+        fi
+    fi
+
     echo "## $title" >> $REPORT_FILE
     echo "**Commande :** \`$cmd\`" >> $REPORT_FILE
     echo "" >> $REPORT_FILE
@@ -86,8 +94,8 @@ else
     log_step "Build & Up" "make rebuild-all" "FAIL" "$OUT"
 fi
 
-echo "⏳ Attente de stabilisation (60s)..."
-sleep 60
+echo "⏳ Attente de stabilisation (90s)..."
+sleep 90
 
 # 4. Configuration ETCD Auth
 echo -n "🔐 ETCD Auth... "
@@ -113,7 +121,7 @@ fi
 
 # 6. Stress Test Final
 echo -n "⚡ Stress Test (HAPROXY)... "
-OUT=$(python3 scripts/tests/stress_test.py --type haproxy --host localhost --port ${EXT_HAPROXY_RW_PORT} --threads 5 --max-req 20 --delay 0.05 2>&1)
+OUT=$(docker exec node1 env CERT_DIR=/etc/patroni/certs python3 /scripts/tests/stress_test.py --type haproxy --host haproxy --port ${INT_HAPROXY_RW_PORT} --threads 5 --max-req 20 --delay 0.05 2>&1)
 if [ $? -eq 0 ]; then
     echo -e "${GREEN}OK${NC}"
     log_step "Stress Test" "stress_test.py" "OK" "$OUT"
@@ -122,4 +130,8 @@ else
     log_step "Stress Test" "stress_test.py" "FAIL" "$OUT"
 fi
 
+echo -e "\n${YELLOW}📊 Génération du rapport HTML...${NC}"
+python3 scripts/manage/generate_html_report.py "$REPORT_FILE"
+
 echo -e "\n${YELLOW}🏁 BIG-TEST Terminé. Rapport disponible : ${GREEN}$REPORT_FILE${NC}"
+echo -e "${YELLOW}🌐 Rapport HTML disponible : ${GREEN}${REPORT_FILE%.md}.html${NC}"

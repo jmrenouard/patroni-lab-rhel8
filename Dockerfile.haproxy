@@ -1,0 +1,16 @@
+FROM patroni-rhel8-base:latest
+
+# Metadata
+LABEL maintainer="Jean-Marie RENOUARD<jmrenouard@gmail.com>"
+LABEL org.opencontainers.image.title="Patroni Lab RHEL 8 HAProxy"
+LABEL description="HAProxy image based on RHEL 8 UBI"
+
+# Install HAProxy
+RUN dnf install -y haproxy && \
+    dnf clean all
+
+# Expose HAProxy ports
+EXPOSE 22 5000 5001 7000
+
+# Start HAProxy
+CMD ["haproxy", "-f", "/usr/local/etc/haproxy/haproxy.cfg"]

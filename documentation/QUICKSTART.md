@@ -73,4 +73,4 @@ Pour arrêter le cluster et nettoyer les ressources :
 
 ---
 > [!TIP]
-> Pour plus de détails sur les procédures d'administration, consultez le [Manuel etcd](procedures/etcd_admin.md).
+> Pour approfondir, consultez la [Hiérarchie des Images Docker](docker_images.md) ou l'[Architecture Détaillée](architecture.md).

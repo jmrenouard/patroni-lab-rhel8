@@ -1,9 +1,18 @@
 FROM registry.access.redhat.com/ubi8/ubi:latest
 
+# Metadata
+LABEL maintainer="Jean-Marie RENOUARD<jmrenouard@gmail.com>"
+LABEL org.opencontainers.image.title="Patroni Lab RHEL 8 Base"
 # Environmental variables
 ENV TERM=xterm \
-    PSQL_VERSION=17 \
-    PYTHONHTTPSVERIFY=0
+    PYTHONHTTPSVERIFY=0 \
+    LANG=en_US.UTF-8 \
+    LANGUAGE=en_US:en \
+    LC_ALL=en_US.UTF-8
+
+# Create postgres user
+RUN groupadd -g 26 postgres && \
+    useradd -u 26 -g 26 -d /var/lib/pgsql -s /bin/bash postgres
 
 # 🛠️ System Utilities, repositories and shared dependencies
 RUN dnf install -y \
@@ -13,9 +22,15 @@ RUN dnf install -y \
     hostname \
     curl \
     wget \
-    vim \
+    vim-enhanced \
     passwd \
     openssh-server \
+    openssh-clients \
+    openssl \
+    rsync \
+    git \
+    unzip \
+    ca-certificates \
     python3.12 \
     python3.12-pip \
     python3.12-devel \
@@ -31,14 +46,18 @@ RUN dnf install -y \
 RUN /usr/bin/python3.12 -m pip install --no-cache-dir supervisor
 
 # Setup directories for Supervisor and SSH
-RUN mkdir -p /var/run/sshd /var/log/supervisor /etc/supervisor
+RUN mkdir -p /var/run/sshd /var/log/supervisor /etc/supervisor /etc/patroni/certs
 
 # Configure SSH
 RUN ssh-keygen -A && \
+    echo 'root:rootpass' | chpasswd && \
     sed -i 's/#PermitRootLogin yes/PermitRootLogin yes/' /etc/ssh/sshd_config && \
+    sed -i 's/#PasswordAuthentication yes/PasswordAuthentication yes/' /etc/ssh/sshd_config && \
     mkdir -p /root/.ssh && \
     chmod 700 /root/.ssh
 
-# Copy SSH keys (assuming they are in the build context)
-COPY id_rsa.pub /root/.ssh/authorized_keys
-RUN chmod 600 /root/.ssh/authorized_keys
+# Copy SSH keys (assuming they are in the build context - handled by Makefile)
+# We will use the same keys for all nodes to simplify the lab
+COPY ssh/id_rsa.pub /root/.ssh/authorized_keys
+COPY ssh/id_rsa /root/.ssh/id_rsa
+RUN chmod 600 /root/.ssh/authorized_keys /root/.ssh/id_rsa

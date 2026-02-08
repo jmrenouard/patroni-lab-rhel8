@@ -28,3 +28,7 @@ __pycache__/**
 __pycache__
 .agent/**
 .agent_origin/**
+.env
+reports/report_*
+certs/*
+.env

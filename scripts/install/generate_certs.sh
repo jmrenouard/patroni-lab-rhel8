@@ -5,6 +5,21 @@
 CERT_DIR="./certs"
 mkdir -p $CERT_DIR
 
+# Charger les variables d'environnement si le fichier .env existe
+if [ -f .env ]; then
+    export $(grep -v '^#' .env | xargs)
+fi
+
+# SANs par défaut
+DEFAULT_SANS="DNS:localhost,DNS:etcd1,DNS:etcd2,DNS:etcd3,DNS:node1,DNS:node2,DNS:node3,DNS:haproxy,DNS:pgbouncer,IP:127.0.0.1"
+
+# Fusionner avec EXTRA_SANS si défini
+if [ -n "$EXTRA_SANS" ]; then
+    SANS="${DEFAULT_SANS},${EXTRA_SANS}"
+else
+    SANS="${DEFAULT_SANS}"
+fi
+
 # Fichier de config OpenSSL temporaire pour les SAN
 cat > $CERT_DIR/openssl.cnf <<EOF
 [req]
@@ -18,48 +33,43 @@ commonName = Common Name
 [v3_req]
 basicConstraints = CA:FALSE
 keyUsage = nonRepudiation, digitalSignature, keyEncipherment
-subjectAltName = @alt_names
+subjectAltName = $SANS
 
 [v3_ca]
 basicConstraints = CA:TRUE
 keyUsage = cRLSign, keyCertSign
 subjectKeyIdentifier = hash
 authorityKeyIdentifier = keyid:always,issuer
-
-[alt_names]
-DNS.1 = localhost
-DNS.2 = etcd1
-DNS.3 = etcd2
-DNS.4 = etcd3
-DNS.5 = node1
-DNS.6 = node2
-DNS.7 = node3
-DNS.8 = haproxy
-DNS.9 = pgbouncer
-IP.1 = 127.0.0.1
 EOF
 
 echo "🔐 Génération de l'autorité de certification (CA)..."
 openssl genrsa -out $CERT_DIR/ca.key 2048
 openssl req -x509 -new -nodes -key $CERT_DIR/ca.key -subj "/CN=Patroni-Cluster-CA" -days 3650 -out $CERT_DIR/ca.crt -config $CERT_DIR/openssl.cnf -extensions v3_ca
 
-generate_cert() {
+generate_cert_with_cn() {
     local name=$1
-    echo "📜 Génération du certificat pour $name..."
+    local cn=$2
+    echo "📜 Génération du certificat pour $name (CN=$cn)..."
     openssl genrsa -out $CERT_DIR/$name.key 2048
-    openssl req -new -key $CERT_DIR/$name.key -subj "/CN=$name" -out $CERT_DIR/$name.csr -config $CERT_DIR/openssl.cnf
+    openssl req -new -key $CERT_DIR/$name.key -subj "/CN=$cn" -out $CERT_DIR/$name.csr -config $CERT_DIR/openssl.cnf
     openssl x509 -req -in $CERT_DIR/$name.csr -CA $CERT_DIR/ca.crt -CAkey $CERT_DIR/ca.key -CAcreateserial -out $CERT_DIR/$name.crt -days 365 -sha256 -extfile $CERT_DIR/openssl.cnf -extensions v3_req
+}
+
+generate_cert() {
+    generate_cert_with_cn "$1" "$1"
 }
 
 # Certificats pour ETCD (Unifié avec SANs pour tous les noeuds)
 generate_cert "etcd-server"
-generate_cert "etcd-client"
+# On utilise CN=patroni pour le client afin d'utiliser la délégation d'identité ETCD
+generate_cert_with_cn "etcd-client" "${ETCD_PATRONI_USER}"
 
 # Certificats pour Patroni API
 generate_cert "patroni-api"
 
 # Certificats pour PostgreSQL
 generate_cert "postgresql-server"
+generate_cert_with_cn "postgresql-client" "${REPLICATOR_USER}"
 
 # Certificats pour PgBouncer
 generate_cert "pgbouncer"

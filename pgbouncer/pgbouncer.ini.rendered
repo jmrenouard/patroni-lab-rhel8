@@ -13,15 +13,15 @@ default_pool_size = 20
 
 # TLS Configuration (Client Side - connection to HAProxy)
 server_tls_sslmode = require
-server_tls_ca_file = /certs/ca.crt
-server_tls_cert_file = /certs/pgbouncer.crt
-server_tls_key_file = /certs/pgbouncer.key
+server_tls_ca_file = /etc/patroni/certs/ca.crt
+server_tls_cert_file = /etc/patroni/certs/pgbouncer.crt
+server_tls_key_file = /etc/patroni/certs/pgbouncer.key
 
 # TLS Configuration (Server Side - client connections to PgBouncer)
 client_tls_sslmode = require
-client_tls_ca_file = /certs/ca.crt
-client_tls_cert_file = /certs/pgbouncer.crt
-client_tls_key_file = /certs/pgbouncer.key
+client_tls_ca_file = /etc/patroni/certs/ca.crt
+client_tls_cert_file = /etc/patroni/certs/pgbouncer.crt
+client_tls_key_file = /etc/patroni/certs/pgbouncer.key
 client_tls_protocols = secure
 
 # Logging

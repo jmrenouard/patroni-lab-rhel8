@@ -39,19 +39,23 @@ frontend pg_read
 
 # Backend pour le Primaire
 backend pg_primary
-    option httpchk GET /primary
+    option httpchk
+    http-check connect port 8008 ssl
+    http-check send meth GET uri /primary
     http-check expect status 200
     # Utilisation du PROXY protocol pour PostgreSQL
     default-server inter 3s fall 3 rise 2 on-marked-down shutdown-sessions send-proxy-v2
-    server node1 node1:5432 check port 8008 ssl verify none weight 100
-    server node2 node2:5432 check port 8008 ssl verify none weight 50
-    server node3 node3:5432 check port 8008 ssl verify none backup weight 1
+    server node1 node1:5432 check port 8008 ssl verify none check-ssl weight 100
+    server node2 node2:5432 check port 8008 ssl verify none check-ssl weight 50
+    server node3 node3:5432 check port 8008 ssl verify none check-ssl backup weight 1
 
 # Backend pour les Réplicas
 backend pg_replicas
-    option httpchk GET /replica
+    option httpchk
+    http-check connect port 8008 ssl
+    http-check send meth GET uri /replica
     http-check expect status 200
     default-server inter 3s fall 3 rise 2 on-marked-down shutdown-sessions send-proxy-v2
-    server node1 node1:5432 check port 8008 ssl verify none weight 100
-    server node2 node2:5432 check port 8008 ssl verify none weight 50
-    server node3 node3:5432 check port 8008 ssl verify none backup weight 1
+    server node1 node1:5432 check port 8008 ssl verify none check-ssl weight 100
+    server node2 node2:5432 check port 8008 ssl verify none check-ssl weight 50
+    server node3 node3:5432 check port 8008 ssl verify none check-ssl backup weight 1

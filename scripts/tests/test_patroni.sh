@@ -12,7 +12,8 @@ echo "🧪 [PATRONI] Test de l'API REST et de la réplication..."
 
 # 1. Test Accessibilité API (sur node1)
 echo -n "🌐 API REST (Node 1 - Port ${INT_PATRONI_PORT})... "
-if docker exec node1 curl -s -k -u ${PATRONI_API_USER}:${PATRONI_API_PASSWORD} https://localhost:${INT_PATRONI_PORT}/health | grep -q "running"; then
+# On accepte 'running' ou 'starting' car le cluster peut être en cours d'initialisation
+if docker exec node1 curl -s -k -u ${PATRONI_API_USER}:${PATRONI_API_PASSWORD} https://localhost:${INT_PATRONI_PORT}/health | grep -qE "running|starting"; then
     echo -e "${GREEN}OK${NC}"
 else
     echo -e "${RED}FAIL (Auth ou TLS)${NC}"
@@ -29,7 +30,7 @@ fi
 
 # 3. Test de lecture/écriture SQL (via container)
 echo -n "🐘 Test Écriture SQL (Direct)... "
-if docker exec $LEADER psql -p ${INT_PG_PORT} -U ${POSTGRES_USER} -d postgres -c "CREATE TABLE IF NOT EXISTS test_resilience (id serial primary key, val text); INSERT INTO test_resilience(val) VALUES ('test');" &> /dev/null; then
+if docker exec node1 psql "host=localhost port=${INT_PG_PORT} user=${POSTGRES_USER} dbname=postgres sslmode=require" -c "CREATE TABLE IF NOT EXISTS test_resilience (id serial primary key, val text); INSERT INTO test_resilience(val) VALUES ('test');" &> /dev/null; then
     echo -e "${GREEN}OK${NC}"
 else
     echo -e "${RED}FAIL (Écriture PG)${NC}"

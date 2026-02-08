@@ -1,15 +1,22 @@
 FROM patroni-rhel8-base:latest
 
+# Metadata
+LABEL maintainer="Jean-Marie RENOUARD<jmrenouard@gmail.com>"
+LABEL org.opencontainers.image.title="Patroni Lab RHEL 8 PostgreSQL"
+LABEL description="PostgreSQL 17 & Patroni 4.1 image based on RHEL 8 UBI"
+
 # Environmental variables
 ENV PATRONI_ETCD3_INSECURE=true \
-    PATRONI_ETCD3_PROTOCOL=http
+    PATRONI_ETCD3_PROTOCOL=http \
+    PSQL_VERSION=17 \
+    PATH="/usr/pgsql-17/bin:$PATH"
 
 # Install PostgreSQL and Patroni
 RUN dnf install -y postgresql${PSQL_VERSION}-server patroni-4.1.0 patroni-etcd && \
     dnf clean all
 
 # Install ETCD v3 python client (force urllib3<2.0.0 for etcd3 compatibility)
-RUN /usr/bin/python3.12 -m pip install --no-cache-dir "urllib3<2.0.0" etcd3
+RUN /usr/bin/python3.12 -m pip install --no-cache-dir "urllib3<2.0.0" "patroni[etcd3]"
 
 # Setup PostgreSQL directories
 RUN mkdir -p /datas/postgres /var/run/postgresql && \
@@ -17,11 +24,13 @@ RUN mkdir -p /datas/postgres /var/run/postgresql && \
     chmod 700 /datas/postgres
 
 # Copy configuration files
-COPY supervisord.conf /etc/supervisor/supervisord.conf
-COPY patroni.yml /etc/patroni.yml
+COPY supervisord.conf /etc/supervisord.conf
+COPY patroni/patroni.yml /etc/patroni.yml
+RUN chown postgres:postgres /etc/patroni.yml
 
-# Expose ports
+# Expose ports: SSH (22), PostgreSQL (5432), Patroni REST API (8008)
 EXPOSE 22 5432 8008
 
-# Start Supervisor
-CMD ["/usr/local/bin/supervisord", "-c", "/etc/supervisor/supervisord.conf"]
+# Start via Entrypoint to handle certs, then launch Supervisor
+ENTRYPOINT ["/bin/bash", "/scripts/manage/entrypoint_node.sh"]
+CMD ["/usr/local/bin/supervisord", "-c", "/etc/supervisord.conf"]

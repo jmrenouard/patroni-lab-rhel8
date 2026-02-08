@@ -12,7 +12,11 @@ echo "🧪 [ETCD] Test de la couche ETCD (HTTPS & Auth)..."
 
 # 1. Test HTTPS Endpoint (Santé) via curl
 echo -n "🌐 Test HTTPS (Port ${INT_ETCD_CLIENT_PORT})... "
-if docker exec etcd1 curl -s --cacert /certs/ca.crt https://etcd1:${INT_ETCD_CLIENT_PORT}/health | grep -q "true"; then
+CURL_AUTH_ARGS=""
+if [ "${VERIFY_CLIENT_CERT}" = "true" ]; then
+    CURL_AUTH_ARGS="--cert /certs/etcd-client.crt --key /certs/etcd-client.key"
+fi
+if docker exec etcd1 curl -s $CURL_AUTH_ARGS --cacert /certs/ca.crt https://etcd1:${INT_ETCD_CLIENT_PORT}/health | grep -q "true"; then
     echo -e "${GREEN}OK${NC}"
 else
     echo -e "${RED}FAIL (TLS erroné)${NC}"
@@ -34,10 +38,10 @@ else
 fi
 
 # 3. Test Utilisateur Patroni (Permissions)
-echo -n "👤 Test Utilisateur Patroni (R/W sur /$SCOPE)... "
+echo -n "👤 Test Utilisateur Patroni (R/W sur ${NAMESPACE}${SCOPE})... "
 if docker exec etcd1 etcdctl --endpoints=https://etcd1:${INT_ETCD_CLIENT_PORT} \
     $ETCD_AUTH_ARGS --user=${ETCD_PATRONI_USER}:${ETCD_PATRONI_PASSWORD} \
-    put /${SCOPE}/test_key "works" &> /dev/null; then
+    put ${NAMESPACE}${SCOPE}/test_key "works" &> /dev/null; then
     echo -e "${GREEN}OK${NC}"
 else
     echo -e "${RED}FAIL (Permissions DS)${NC}"

@@ -1,14 +1,19 @@
 # Makefile for Patroni RHEL 8 Cluster
 # Orchestrates a 3-node Patroni/PostgreSQL/ETCD cluster using docker-compose.
 
-IMAGE_NAME = patroni-rhel8
+IMAGE_BASE = patroni-rhel8-base
+IMAGE_ETCD = patroni-rhel8-etcd
+IMAGE_POSTGRES = patroni-rhel8-postgresql
+IMAGE_HAPROXY = patroni-rhel8-haproxy
+IMAGE_PGBOUNCER = patroni-rhel8-pgbouncer
 COMPOSE_FILE = docker-compose.yml
 
 .PHONY: help build up down restart status logs clean ps gen-ssh \
 	gen-certs extract-rpms check-env setup-pgbouncer verify-cluster \
 	stress-test cleanup test-pgbouncer test-etcd test-patroni \
 	test-haproxy verify big-test install-tools rebuild-all \
-	up-etcd down-etcd etcd
+	up-etcd down-etcd etcd build-base build-etcd build-postgres \
+	build-haproxy build-pgbouncer
 
 help:
 	@echo "=========================================================="
@@ -16,7 +21,8 @@ help:
 	@echo "=========================================================="
 	@echo ""
 	@echo "🚀 Cluster Management:"
-	@echo "  make build         - Build the Docker image"
+	@echo "  make build         - Build all specialized images"
+	@echo "  make build-base    - Build only the base image"
 	@echo "  make up            - Start the 3-node cluster"
 	@echo "  make down          - Stop and remove the cluster"
 	@echo "  make restart       - Restart the cluster"
@@ -73,8 +79,27 @@ check-env:
 setup-pgbouncer:
 	@./scripts/install/setup_pgbouncer.sh
 
-build: gen-ssh
-	docker build -t $(IMAGE_NAME) .
+build-base: gen-ssh
+	@echo "🏗️ Building base image..."
+	docker build -t $(IMAGE_BASE):latest -f Dockerfile.base .
+
+build-etcd: build-base
+	@echo "🏗️ Building ETCD image..."
+	docker build -t $(IMAGE_ETCD):latest -f Dockerfile.etcd .
+
+build-postgres: build-base
+	@echo "🏗️ Building PostgreSQL/Patroni image..."
+	docker build -t $(IMAGE_POSTGRES):latest -f Dockerfile.postgresql .
+
+build-haproxy: build-base
+	@echo "🏗️ Building HAProxy image..."
+	docker build -t $(IMAGE_HAPROXY):latest -f Dockerfile.haproxy .
+
+build-pgbouncer: build-base
+	@echo "🏗️ Building PgBouncer image..."
+	docker build -t $(IMAGE_PGBOUNCER):latest -f Dockerfile.pgbouncer .
+
+build: build-base build-etcd build-postgres build-haproxy build-pgbouncer
 
 up:
 	docker compose -f $(COMPOSE_FILE) up -d
@@ -98,7 +123,7 @@ status:
 	@docker exec node1 patronictl -c /etc/patroni.yml list
 
 etcd:
-	@docker exec etcd1 etcdctl --endpoints=https://etcd1:2379,https://etcd2:2379,https://etcd3:2379 --cacert=/certs/ca.crt --cert=/certs/etcd-client.crt --key=/certs/etcd-client.key endpoint health --cluster
+	@docker exec etcd1 etcdctl --endpoints=https://etcd1:2379,https://etcd2:2379,https://etcd3:2379 --cacert=/certs/ca.crt --cert=/certs/etcd-client.crt --key=/certs/etcd-client.key --user root:${ETCD_ROOT_PASSWORD} endpoint health --cluster
 
 test-etcd:
 	@./scripts/tests/test_etcd.sh
