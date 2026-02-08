@@ -3,7 +3,7 @@ services:
     image: patroni-rhel8:latest
     container_name: etcd1
     hostname: etcd1
-    entrypoint: /bin/bash /scripts/entrypoint_etcd.sh
+    entrypoint: /bin/bash /scripts/manage/entrypoint_etcd.sh
     environment:
       - ETCD_NAME=etcd1
       - ETCD_DATA_DIR=/etcd-data
@@ -21,7 +21,7 @@ services:
     image: patroni-rhel8:latest
     container_name: etcd2
     hostname: etcd2
-    entrypoint: /bin/bash /scripts/entrypoint_etcd.sh
+    entrypoint: /bin/bash /scripts/manage/entrypoint_etcd.sh
     environment:
       - ETCD_NAME=etcd2
       - ETCD_DATA_DIR=/etcd-data
@@ -39,7 +39,7 @@ services:
     image: patroni-rhel8:latest
     container_name: etcd3
     hostname: etcd3
-    entrypoint: /bin/bash /scripts/entrypoint_etcd.sh
+    entrypoint: /bin/bash /scripts/manage/entrypoint_etcd.sh
     environment:
       - ETCD_NAME=etcd3
       - ETCD_DATA_DIR=/etcd-data

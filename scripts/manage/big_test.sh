@@ -52,7 +52,7 @@ EOF
 
 # 1. Nettoyage
 echo -n "🧹 Nettoyage... "
-OUT=$(./scripts/cleanup_all.sh 2>&1)
+OUT=$(./scripts/manage/cleanup_all.sh 2>&1)
 if [ $? -eq 0 ]; then
     echo -e "${GREEN}OK${NC}"
     log_step "Nettoyage" "./scripts/cleanup_all.sh" "OK" "$OUT"
@@ -63,10 +63,10 @@ fi
 
 # 2. Génération de certificats et clés
 echo -n "🔑 Sécurité (Certs/SSH)... "
-OUT=$(./scripts/generate_certs.sh 2>&1)
+OUT=$(./scripts/install/generate_certs.sh 2>&1)
 cat certs/patroni-api.crt certs/patroni-api.key > certs/haproxy.pem
-./scripts/setup_pgbouncer.sh >> /dev/null
-./scripts/setup_configs.sh >> /dev/null
+./scripts/install/setup_pgbouncer.sh >> /dev/null
+./scripts/install/setup_configs.sh >> /dev/null
 if [ $? -eq 0 ]; then
     echo -e "${GREEN}OK${NC}"
     log_step "Sécurité" "./scripts/generate_certs.sh" "OK" "$OUT"
@@ -91,7 +91,7 @@ sleep 60
 
 # 4. Configuration ETCD Auth
 echo -n "🔐 ETCD Auth... "
-OUT=$(./scripts/setup_etcd_auth.sh 2>&1)
+OUT=$(./scripts/install/setup_etcd_auth.sh 2>&1)
 if [ $? -eq 0 ]; then
     echo -e "${GREEN}OK${NC}"
     log_step "ETCD Auth" "./scripts/setup_etcd_auth.sh" "OK" "$OUT"
@@ -102,7 +102,7 @@ fi
 
 # 5. Validation Globale
 echo -n "🧪 Vérification Globale... "
-OUT=$(./scripts/verify_cluster.sh 2>&1)
+OUT=$(./scripts/tests/verify_cluster.sh 2>&1)
 if [ $? -eq 0 ]; then
     echo -e "${GREEN}OK${NC}"
     log_step "Vérification Globale" "./scripts/verify_cluster.sh" "OK" "$OUT"
@@ -113,7 +113,7 @@ fi
 
 # 6. Stress Test Final
 echo -n "⚡ Stress Test (HAPROXY)... "
-OUT=$(python3 scripts/stress_test.py --type haproxy --host localhost --port ${EXT_HAPROXY_RW_PORT} --threads 5 --max-req 20 --delay 0.05 2>&1)
+OUT=$(python3 scripts/tests/stress_test.py --type haproxy --host localhost --port ${EXT_HAPROXY_RW_PORT} --threads 5 --max-req 20 --delay 0.05 2>&1)
 if [ $? -eq 0 ]; then
     echo -e "${GREEN}OK${NC}"
     log_step "Stress Test" "stress_test.py" "OK" "$OUT"

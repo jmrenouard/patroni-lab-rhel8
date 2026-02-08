@@ -58,6 +58,14 @@ Le cluster est composé de 8 conteneurs basés sur RHEL 8 (UBI) :
 | `stress_test.py` | Résilience | Injection cyclique de requêtes (threads/durée) | % Succès > 99% sous charge |
 | `verify_cluster.sh` | Global | Orchestration de tous les tests + Failover | Bascule du Leader réussie |
 
+## 📚 Documentation
+
+Une documentation détaillée est disponible pour approfondir l'usage et l'administration du cluster :
+
+- [🧪 Matrice et Détails des Tests](documentation/tests.md) : Descriptions approfondies de chaque test et procédure de validation.
+- [🛠️ Manuel d'Administration etcd 3.6](documentation/procedures/etcd_admin.md) : Procédures de sauvegarde, restauration et maintenance.
+- [📜 Guide des Scripts d'Automatisation](documentation/scripts/README.md) : Description et usage des 20 scripts du répertoire `scripts/`.
+- [📖 Index des Procédures](documentation/procedures/README.md) : Liste de toutes les procédures d'exploitation.
+
 ## 📊 Rapports
 Chaque exécution de `make big-test` génère un rapport markdown détaillé dans le répertoire `./reports/`.
-EOF

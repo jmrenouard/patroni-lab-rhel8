@@ -12,27 +12,27 @@ NC='\033[0m'
 echo -e "🧪 [VERIFY] Démarrage de la validation globale...\n"
 
 # 1. Validation de l'environnement
-./scripts/check_env.sh
+./scripts/manage/check_env.sh
 if [ $? -ne 0 ]; then echo -e "${RED}❌ Échec de la vérification .env${NC}"; exit 1; fi
 
 # 2. Tests Externes (Modular)
-chmod +x scripts/test_*.sh
+chmod +x scripts/tests/test_*.sh
 
 echo "--- 🛠️  Tests Externes ---"
-./scripts/test_etcd.sh || { echo -e "${RED}❌ Échec ETCD${NC}"; exit 1; }
-./scripts/test_patroni.sh || { echo -e "${RED}❌ Échec Patroni/PG${NC}"; exit 1; }
-./scripts/test_haproxy.sh || { echo -e "${RED}❌ Échec HAProxy${NC}"; exit 1; }
+./scripts/tests/test_etcd.sh || { echo -e "${RED}❌ Échec ETCD${NC}"; exit 1; }
+./scripts/tests/test_patroni.sh || { echo -e "${RED}❌ Échec Patroni/PG${NC}"; exit 1; }
+./scripts/tests/test_haproxy.sh || { echo -e "${RED}❌ Échec HAProxy${NC}"; exit 1; }
 
 # 3. Tests Internes (Docker Exec)
 echo -e "\n--- 🐳 Tests Internes (Containers) ---"
-./scripts/test_dck_etcd.sh || { echo -e "${RED}❌ Échec Interne ETCD${NC}"; exit 1; }
-./scripts/test_dck_patroni.sh || { echo -e "${RED}❌ Échec Interne Patroni${NC}"; exit 1; }
-./scripts/test_dck_haproxy.sh || { echo -e "${RED}❌ Échec Interne HAProxy${NC}"; exit 1; }
-./scripts/test_dck_pgbouncer.sh || { echo -e "${RED}❌ Échec Interne PgBouncer${NC}"; exit 1; }
+./scripts/tests/test_dck_etcd.sh || { echo -e "${RED}❌ Échec Interne ETCD${NC}"; exit 1; }
+./scripts/tests/test_dck_patroni.sh || { echo -e "${RED}❌ Échec Interne Patroni${NC}"; exit 1; }
+./scripts/tests/test_dck_haproxy.sh || { echo -e "${RED}❌ Échec Interne HAProxy${NC}"; exit 1; }
+./scripts/tests/test_dck_pgbouncer.sh || { echo -e "${RED}❌ Échec Interne PgBouncer${NC}"; exit 1; }
 
 # 4. Test de Charge Rapide (Stress Test)
 echo -e "\n--- ⚡ Test de Charge Rapide (Stress) ---"
-python3 scripts/stress_test.py --type haproxy --host localhost --port ${EXT_HAPROXY_RW_PORT} --threads 2 --max-req 5 --delay 0.1
+python3 scripts/tests/stress_test.py --type haproxy --host localhost --port ${EXT_HAPROXY_RW_PORT} --threads 2 --max-req 5 --delay 0.1
 
 # 5. Test de Bascule (Failover)
 echo -e "\n--- 🏁 [HA] Test de bascule (Failover) ---"
