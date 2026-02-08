@@ -26,3 +26,5 @@ ssh/id_rsa
 ssh/id_rsa.pub
 __pycache__/**
 __pycache__
+.agent/**
+.agent_origin/**
