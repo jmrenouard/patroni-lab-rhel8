@@ -1,0 +1,44 @@
+FROM registry.access.redhat.com/ubi8/ubi:latest
+
+# Environmental variables
+ENV TERM=xterm \
+    PSQL_VERSION=17 \
+    PYTHONHTTPSVERIFY=0
+
+# 🛠️ System Utilities, repositories and shared dependencies
+RUN dnf install -y \
+    procps-ng \
+    iputils \
+    net-tools \
+    hostname \
+    curl \
+    wget \
+    vim \
+    passwd \
+    openssh-server \
+    python3.12 \
+    python3.12-pip \
+    python3.12-devel \
+    gcc \
+    libffi-devel \
+    glibc-langpack-en && \
+    dnf install -y https://download.postgresql.org/pub/repos/yum/reporpms/EL-8-x86_64/pgdg-redhat-repo-latest.noarch.rpm && \
+    dnf install -y https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm && \
+    dnf config-manager --enable pgdg-rhel8-extras && \
+    dnf clean all
+
+# Install supervisor
+RUN /usr/bin/python3.12 -m pip install --no-cache-dir supervisor
+
+# Setup directories for Supervisor and SSH
+RUN mkdir -p /var/run/sshd /var/log/supervisor /etc/supervisor
+
+# Configure SSH
+RUN ssh-keygen -A && \
+    sed -i 's/#PermitRootLogin yes/PermitRootLogin yes/' /etc/ssh/sshd_config && \
+    mkdir -p /root/.ssh && \
+    chmod 700 /root/.ssh
+
+# Copy SSH keys (assuming they are in the build context)
+COPY id_rsa.pub /root/.ssh/authorized_keys
+RUN chmod 600 /root/.ssh/authorized_keys

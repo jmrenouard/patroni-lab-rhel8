@@ -1,0 +1,32 @@
+# Configuration ETCD - Node 3 - Documentée en Français
+# ====================================================
+
+name: etcd3
+data-dir: /etcd-data
+
+# --- URL CLIENTS ---
+listen-client-urls: https://0.0.0.0:2379
+advertise-client-urls: https://etcd3:2379
+
+# --- URL PAIRS (Peer) ---
+listen-peer-urls: https://0.0.0.0:2380
+initial-advertise-peer-urls: https://etcd3:2380
+
+# --- FORMATION DU CLUSTER ---
+initial-cluster: etcd1=https://etcd1:2380,etcd2=https://etcd2:2380,etcd3=https://etcd3:2380
+initial-cluster-state: new
+initial-cluster-token: etcd-cluster-1
+
+# --- SÉCURITÉ TLS CLIENT ---
+client-transport-security:
+  cert-file: /certs/etcd-server.crt
+  key-file: /certs/etcd-server.key
+  client-cert-auth: false
+  trusted-ca-file: /certs/ca.crt
+
+# --- SÉCURITÉ TLS PAIR ---
+peer-transport-security:
+  cert-file: /certs/etcd-server.crt
+  key-file: /certs/etcd-server.key
+  peer-client-cert-auth: false
+  trusted-ca-file: /certs/ca.crt

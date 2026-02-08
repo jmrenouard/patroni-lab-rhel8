@@ -1,0 +1,196 @@
+services:
+  etcd1:
+    image: patroni-rhel8:latest
+    container_name: etcd1
+    hostname: etcd1
+    entrypoint: /bin/bash /scripts/entrypoint_etcd.sh
+    environment:
+      - ETCD_NAME=etcd1
+      - ETCD_DATA_DIR=/etcd-data
+      - INT_ETCD_CLIENT_PORT=${INT_ETCD_CLIENT_PORT}
+      - INT_ETCD_PEER_PORT=${INT_ETCD_PEER_PORT}
+      - VERIFY_CLIENT_CERT=${VERIFY_CLIENT_CERT}
+    volumes:
+      - ./certs:/certs:ro
+      - ./scripts:/scripts:ro
+      - etcd1_data:/etcd-data
+    networks:
+      - default
+
+  etcd2:
+    image: patroni-rhel8:latest
+    container_name: etcd2
+    hostname: etcd2
+    entrypoint: /bin/bash /scripts/entrypoint_etcd.sh
+    environment:
+      - ETCD_NAME=etcd2
+      - ETCD_DATA_DIR=/etcd-data
+      - INT_ETCD_CLIENT_PORT=${INT_ETCD_CLIENT_PORT}
+      - INT_ETCD_PEER_PORT=${INT_ETCD_PEER_PORT}
+      - VERIFY_CLIENT_CERT=${VERIFY_CLIENT_CERT}
+    volumes:
+      - ./certs:/certs:ro
+      - ./scripts:/scripts:ro
+      - etcd2_data:/etcd-data
+    networks:
+      - default
+
+  etcd3:
+    image: patroni-rhel8:latest
+    container_name: etcd3
+    hostname: etcd3
+    entrypoint: /bin/bash /scripts/entrypoint_etcd.sh
+    environment:
+      - ETCD_NAME=etcd3
+      - ETCD_DATA_DIR=/etcd-data
+      - INT_ETCD_CLIENT_PORT=${INT_ETCD_CLIENT_PORT}
+      - INT_ETCD_PEER_PORT=${INT_ETCD_PEER_PORT}
+      - VERIFY_CLIENT_CERT=${VERIFY_CLIENT_CERT}
+    volumes:
+      - ./certs:/certs:ro
+      - ./scripts:/scripts:ro
+      - etcd3_data:/etcd-data
+    networks:
+      - default
+
+  node1:
+    image: patroni-rhel8:latest
+    container_name: node1
+    hostname: node1
+    env_file: .env
+    environment:
+      - PATRONI_NAME=node1
+      - PATRONI_TAGS_DC=dc1
+      - PATRONI_TAGS_FAILOVER_PRIORITY=100
+      - PATRONI_ETCD3_HOSTS=${ETCD_HOSTS}
+      - PATRONI_ETCD3_PROTOCOL=https
+      - PATRONI_ETCD3_CACERT=/certs/ca.crt
+      - PATRONI_ETCD3_CERT=/certs/etcd-client.crt
+      - PATRONI_ETCD3_KEY=/certs/etcd-client.key
+      - PATRONI_ETCD3_USERNAME=${ETCD_PATRONI_USER}
+      - PATRONI_ETCD3_PASSWORD=${ETCD_PATRONI_PASSWORD}
+    ports:
+      - "${SSH_PORT_NODE1}:${INT_SSH_PORT}"
+      - "${EXT_PG_PORT_NODE1}:${INT_PG_PORT}"
+      - "${EXT_PATRONI_PORT_NODE1}:${INT_PATRONI_PORT}"
+    volumes:
+      - node1_data:/datas
+      - ./certs:/certs:ro
+      - ./patroni/patroni.yml.rendered:/etc/patroni.yml:ro
+    depends_on:
+      - etcd1
+      - etcd2
+      - etcd3
+    networks:
+      - default
+
+  node2:
+    image: patroni-rhel8:latest
+    container_name: node2
+    hostname: node2
+    env_file: .env
+    environment:
+      - PATRONI_NAME=node2
+      - PATRONI_TAGS_DC=dc1
+      - PATRONI_TAGS_FAILOVER_PRIORITY=50
+      - PATRONI_ETCD3_HOSTS=${ETCD_HOSTS}
+      - PATRONI_ETCD3_PROTOCOL=https
+      - PATRONI_ETCD3_CACERT=/certs/ca.crt
+      - PATRONI_ETCD3_CERT=/certs/etcd-client.crt
+      - PATRONI_ETCD3_KEY=/certs/etcd-client.key
+      - PATRONI_ETCD3_USERNAME=${ETCD_PATRONI_USER}
+      - PATRONI_ETCD3_PASSWORD=${ETCD_PATRONI_PASSWORD}
+    ports:
+      - "${SSH_PORT_NODE2}:${INT_SSH_PORT}"
+      - "${EXT_PG_PORT_NODE2}:${INT_PG_PORT}"
+      - "${EXT_PATRONI_PORT_NODE2}:${INT_PATRONI_PORT}"
+    volumes:
+      - node2_data:/datas
+      - ./certs:/certs:ro
+      - ./patroni/patroni.yml.rendered:/etc/patroni.yml:ro
+    depends_on:
+      - etcd1
+      - etcd2
+      - etcd3
+    networks:
+      - default
+
+  node3:
+    image: patroni-rhel8:latest
+    container_name: node3
+    hostname: node3
+    env_file: .env
+    environment:
+      - PATRONI_NAME=node3
+      - PATRONI_TAGS_DC=remote
+      - PATRONI_TAGS_FAILOVER_PRIORITY=1
+      - PATRONI_ETCD3_HOSTS=${ETCD_HOSTS}
+      - PATRONI_ETCD3_PROTOCOL=https
+      - PATRONI_ETCD3_CACERT=/certs/ca.crt
+      - PATRONI_ETCD3_CERT=/certs/etcd-client.crt
+      - PATRONI_ETCD3_KEY=/certs/etcd-client.key
+      - PATRONI_ETCD3_USERNAME=${ETCD_PATRONI_USER}
+      - PATRONI_ETCD3_PASSWORD=${ETCD_PATRONI_PASSWORD}
+    ports:
+      - "${SSH_PORT_NODE3}:${INT_SSH_PORT}"
+      - "${EXT_PG_PORT_NODE3}:${INT_PG_PORT}"
+      - "${EXT_PATRONI_PORT_NODE3}:${INT_PATRONI_PORT}"
+    volumes:
+      - node3_data:/datas
+      - ./certs:/certs:ro
+      - ./patroni/patroni.yml.rendered:/etc/patroni.yml:ro
+    depends_on:
+      - etcd1
+      - etcd2
+      - etcd3
+    networks:
+      - default
+
+  haproxy:
+    image: haproxy:latest
+    container_name: haproxy
+    hostname: haproxy
+    depends_on:
+      - node1
+      - node2
+      - node3
+    ports:
+      - "${EXT_HAPROXY_RW_PORT}:${INT_HAPROXY_RW_PORT}"
+      - "${EXT_HAPROXY_RO_PORT}:${INT_HAPROXY_RO_PORT}"
+      - "${EXT_HAPROXY_STATS_PORT}:${INT_HAPROXY_STATS_PORT}"
+    volumes:
+      - ./haproxy/haproxy.cfg.rendered:/usr/local/etc/haproxy/haproxy.cfg:ro
+      - ./certs:/certs:ro
+    env_file: .env
+    networks:
+      - default
+
+  # PgBouncer - Connection Pooling
+  pgbouncer:
+    image: patroni-rhel8:latest
+    container_name: pgbouncer
+    command: /usr/bin/pgbouncer /etc/pgbouncer/pgbouncer.ini
+    user: postgres
+    env_file: .env
+    ports:
+      - "${EXT_PGBOUNCER_PORT}:${INT_PGBOUNCER_PORT}"
+    volumes:
+      - ./certs:/certs:ro
+      - ./pgbouncer/pgbouncer.ini.rendered:/etc/pgbouncer/pgbouncer.ini:ro
+      - ./pgbouncer/userlist.txt:/etc/pgbouncer/userlist.txt:rw
+    depends_on:
+      - haproxy
+    networks:
+      - default
+
+networks:
+  default:
+    name: patroni-rhel8_default
+
+volumes:
+  node1_data:
+  node2_data:
+  node3_data:
+  etcd1_data:
+  etcd2_data:
+  etcd3_data:

@@ -1,0 +1,27 @@
+FROM patroni-rhel8-base:latest
+
+# Environmental variables
+ENV PATRONI_ETCD3_INSECURE=true \
+    PATRONI_ETCD3_PROTOCOL=http
+
+# Install PostgreSQL and Patroni
+RUN dnf install -y postgresql${PSQL_VERSION}-server patroni-4.1.0 patroni-etcd && \
+    dnf clean all
+
+# Install ETCD v3 python client (force urllib3<2.0.0 for etcd3 compatibility)
+RUN /usr/bin/python3.12 -m pip install --no-cache-dir "urllib3<2.0.0" etcd3
+
+# Setup PostgreSQL directories
+RUN mkdir -p /datas/postgres /var/run/postgresql && \
+    chown -R postgres:postgres /datas/postgres /var/run/postgresql && \
+    chmod 700 /datas/postgres
+
+# Copy configuration files
+COPY supervisord.conf /etc/supervisor/supervisord.conf
+COPY patroni.yml /etc/patroni.yml
+
+# Expose ports
+EXPOSE 22 5432 8008
+
+# Start Supervisor
+CMD ["/usr/local/bin/supervisord", "-c", "/etc/supervisor/supervisord.conf"]

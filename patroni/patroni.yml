@@ -1,0 +1,105 @@
+# Patroni Configuration - Documentée en Français
+# ===============================================
+
+# Nom de l'environnement de cluster partagé par tous les nœuds.
+scope: ${SCOPE}
+
+# Préfixe dans la hiérarchie ETCD où Patroni stockera ses métadonnées.
+namespace: ${NAMESPACE}
+
+# Nom unique de ce nœud Patroni (défini par variable d'environnement dans compose).
+name: ${PATRONI_NAME}
+
+# Configuration de l'API REST de Patroni
+restapi:
+  # Port sur lequel l'API écoute (0.0.0.0 pour toutes les interfaces).
+  listen: 0.0.0.0:${INT_PATRONI_PORT}
+  # Adresse que les autres nœuds utilisent pour contacter cette API.
+  connect_address: ${PATRONI_NAME}:${INT_PATRONI_PORT}
+  # --- SÉCURITÉ API ---
+  # Identifiants pour l'authentification sur l'API REST.
+  username: ${PATRONI_API_USER}
+  password: ${PATRONI_API_PASSWORD}
+  # Certificats pour le HTTPS sur l'API.
+  certfile: ${PATRONI_API_CERT}
+  keyfile: ${PATRONI_API_KEY}
+  cafile: ${CACERT_PATH}
+  verify_client: ${PATRONI_VERIFY_CLIENT}
+
+# Configuration de la communication avec ETCD
+etcd3:
+  # Liste des serveurs ETCD du cluster.
+  hosts: ${ETCD_HOSTS}
+  # Protocole utilisé (https obligatoire pour la sécurité).
+  protocol: ${PATRONI_ETCD3_PROTOCOL}
+  # --- AUTHENTIFICATION ETCD ---
+  # Utilisateur Patroni créé lors de l'initialisation d'ETCD.
+  username: ${ETCD_PATRONI_USER}
+  password: ${ETCD_PATRONI_PASSWORD}
+  # --- TLS ETCD ---
+  # Désactive la vérification si nécessaire (false recommandé avec CA valide).
+  insecure: ${PATRONI_ETCD3_INSECURE}
+  # Certificats client pour l'authentification mutuelle si activée.
+  cert: ${ETCD_CLIENT_CERT}
+  key: ${ETCD_CLIENT_KEY}
+  cacert: ${CACERT_PATH}
+
+# Configuration initiale du Distributed Configuration Store (DCS)
+bootstrap:
+  dcs:
+    ttl: 30
+    loop_wait: 10
+    retry_timeout: 10
+    maximum_lag_on_failover: ${MAX_LAG_ON_FAILOVER}
+    # --- SLOTS DE RÉPLICATION ---
+    slots:
+      # Slot de réplication physique pour garantir que les esclaves ne perdent pas de WAL.
+      pg_failover_slot:
+        type: physical
+    postgresql:
+      use_pg_rewind: true
+      parameters:
+        wal_level: replica
+        max_wal_senders: 10
+        max_replication_slots: 10
+        hot_standby: "on"
+
+  # Initialisation de la base de données
+  initdb: 
+  - encoding: UTF8
+  - data-checksums
+
+# Configuration directe de PostgreSQL
+postgresql:
+  listen: 0.0.0.0:${INT_PG_PORT}
+  connect_address: ${PATRONI_NAME}:${INT_PG_PORT}
+  data_dir: /datas/postgres
+  bin_dir: /usr/pgsql-17/bin/
+  pgpass: /tmp/pgpass
+  # --- AUTHENTIFICATION POSTGRES ---
+  authentication:
+    replication:
+      username: ${REPLICATOR_USER}
+      password: ${REPLICATOR_PASSWORD}
+    superuser:
+      username: ${POSTGRES_USER}
+      password: ${POSTGRES_PASSWORD}
+  parameters:
+    unix_socket_directories: '/var/run/postgresql'
+    # --- SÉCURITÉ SSL POSTGRES ---
+    ssl: "on"
+    ssl_cert_file: ${POSTGRES_SERVER_CERT}
+    ssl_key_file: ${POSTGRES_SERVER_KEY}
+    ssl_ca_file: ${CACERT_PATH}
+  # Configuration des accès (HBA) - Forcer le SSL et restreindre le superuser
+  pg_hba:
+    - host    all             postgres         127.0.0.1/32            md5
+    - ${PG_HBA_SSL_TYPE} all             all              0.0.0.0/0               ${PG_HBA_METHOD}
+    - ${PG_HBA_SSL_TYPE} replication     all              0.0.0.0/0               ${PG_HBA_METHOD}
+
+# Tags pour la logique de bascule et topologie multi-DC
+tags:
+  nosql: false
+  clonefrom: false
+  dc: ${DC:-unknown}
+  failover_priority: ${FAILOVER_PRIORITY:-0}

@@ -1,0 +1,2 @@
+"postgres" "pg_password"
+"replicator" "rep_password"

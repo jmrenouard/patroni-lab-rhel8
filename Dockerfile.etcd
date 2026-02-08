@@ -1,0 +1,12 @@
+FROM patroni-rhel8-base:latest
+
+# Install ETCD
+RUN dnf install -y etcd && \
+    dnf clean all
+
+# Expose ETCD ports
+EXPOSE 2379 2380
+
+# Default command to run ETCD
+# Environment variables or CMD will be provided via docker-compose
+CMD ["/usr/bin/etcd"]

@@ -1,0 +1,105 @@
+# Patroni Configuration - Documentée en Français
+# ===============================================
+
+# Nom de l'environnement de cluster partagé par tous les nœuds.
+scope: patroni-cluster
+
+# Préfixe dans la hiérarchie ETCD où Patroni stockera ses métadonnées.
+namespace: /service/
+
+# Nom unique de ce nœud Patroni (défini par variable d'environnement dans compose).
+name: 
+
+# Configuration de l'API REST de Patroni
+restapi:
+  # Port sur lequel l'API écoute (0.0.0.0 pour toutes les interfaces).
+  listen: 0.0.0.0:8008
+  # Adresse que les autres nœuds utilisent pour contacter cette API.
+  connect_address: :8008
+  # --- SÉCURITÉ API ---
+  # Identifiants pour l'authentification sur l'API REST.
+  username: admin
+  password: admin_password
+  # Certificats pour le HTTPS sur l'API.
+  certfile: /certs/patroni-api.crt
+  keyfile: /certs/patroni-api.key
+  cafile: /certs/ca.crt
+  verify_client: optional
+
+# Configuration de la communication avec ETCD
+etcd3:
+  # Liste des serveurs ETCD du cluster.
+  hosts: etcd1:2379,etcd2:2379,etcd3:2379
+  # Protocole utilisé (https obligatoire pour la sécurité).
+  protocol: https
+  # --- AUTHENTIFICATION ETCD ---
+  # Utilisateur Patroni créé lors de l'initialisation d'ETCD.
+  username: patroni
+  password: patroni_password
+  # --- TLS ETCD ---
+  # Désactive la vérification si nécessaire (false recommandé avec CA valide).
+  insecure: false
+  # Certificats client pour l'authentification mutuelle si activée.
+  cert: /certs/etcd-client.crt
+  key: /certs/etcd-client.key
+  cacert: /certs/ca.crt
+
+# Configuration initiale du Distributed Configuration Store (DCS)
+bootstrap:
+  dcs:
+    ttl: 30
+    loop_wait: 10
+    retry_timeout: 10
+    maximum_lag_on_failover: 1048576
+    # --- SLOTS DE RÉPLICATION ---
+    slots:
+      # Slot de réplication physique pour garantir que les esclaves ne perdent pas de WAL.
+      pg_failover_slot:
+        type: physical
+    postgresql:
+      use_pg_rewind: true
+      parameters:
+        wal_level: replica
+        max_wal_senders: 10
+        max_replication_slots: 10
+        hot_standby: "on"
+
+  # Initialisation de la base de données
+  initdb: 
+  - encoding: UTF8
+  - data-checksums
+
+# Configuration directe de PostgreSQL
+postgresql:
+  listen: 0.0.0.0:5432
+  connect_address: :5432
+  data_dir: /datas/postgres
+  bin_dir: /usr/pgsql-17/bin/
+  pgpass: /tmp/pgpass
+  # --- AUTHENTIFICATION POSTGRES ---
+  authentication:
+    replication:
+      username: replicator
+      password: rep_password
+    superuser:
+      username: postgres
+      password: pg_password
+  parameters:
+    unix_socket_directories: '/var/run/postgresql'
+    # --- SÉCURITÉ SSL POSTGRES ---
+    ssl: "on"
+    ssl_cert_file: /certs/postgresql-server.crt
+    ssl_key_file: /certs/postgresql-server.key
+    ssl_ca_file: /certs/ca.crt
+  # Configuration des accès (HBA) - Forcer le SSL et restreindre le superuser
+  pg_hba:
+    - host    all             postgres         127.0.0.1/32            md5
+    - hostssl all             all              0.0.0.0/0               cert
+    - hostssl replication     all              0.0.0.0/0               cert
+
+# Tags pour la logique de bascule et topologie multi-DC
+tags:
+  nosql: false
+  clonefrom: false
+  dc: ${DC:-unknown}
+  failover_priority: ${FAILOVER_PRIORITY:-0}

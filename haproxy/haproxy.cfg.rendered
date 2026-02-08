@@ -1,0 +1,57 @@
+global
+    log /dev/log local0
+    log /dev/log local1 notice
+    # Utilisation de certificats pour l'administration
+    stats socket /tmp/haproxy.sock mode 660 level admin
+    daemon
+
+    # Paramètres SSL par défaut
+    ssl-default-bind-ciphers HIGH:!aNULL:!MD5
+    ssl-default-server-ciphers HIGH:!aNULL:!MD5
+
+defaults
+    log     global
+    mode    tcp
+    option  tcplog
+    timeout connect 5000
+    timeout client  50000
+    timeout server  50000
+
+# Interface de statistiques (Français : Administration)
+listen stats
+    bind *:7000 ssl crt /certs/haproxy.pem
+    mode http
+    stats enable
+    stats uri /
+    stats refresh 5s
+    stats auth "ha_admin:ha_password"
+    stats admin if TRUE
+
+# Accès Lecture/Écriture (Primaire)
+frontend pg_write
+    bind *:5000 ssl crt /certs/haproxy.pem
+    default_backend pg_primary
+
+# Accès Lecture Seule (Esclaves)
+frontend pg_read
+    bind *:5001 ssl crt /certs/haproxy.pem
+    default_backend pg_replicas
+
+# Backend pour le Primaire
+backend pg_primary
+    option httpchk GET /primary
+    http-check expect status 200
+    # Utilisation du PROXY protocol pour PostgreSQL
+    default-server inter 3s fall 3 rise 2 on-marked-down shutdown-sessions send-proxy-v2
+    server node1 node1:5432 check port 8008 ssl verify none weight 100
+    server node2 node2:5432 check port 8008 ssl verify none weight 50
+    server node3 node3:5432 check port 8008 ssl verify none backup weight 1
+
+# Backend pour les Réplicas
+backend pg_replicas
+    option httpchk GET /replica
+    http-check expect status 200
+    default-server inter 3s fall 3 rise 2 on-marked-down shutdown-sessions send-proxy-v2
+    server node1 node1:5432 check port 8008 ssl verify none weight 100
+    server node2 node2:5432 check port 8008 ssl verify none weight 50
+    server node3 node3:5432 check port 8008 ssl verify none backup weight 1
