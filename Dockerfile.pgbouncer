@@ -5,8 +5,8 @@ LABEL maintainer="Jean-Marie RENOUARD<jmrenouard@gmail.com>"
 LABEL org.opencontainers.image.title="Patroni Lab RHEL 8 PgBouncer"
 LABEL description="PgBouncer image based on RHEL 8 UBI"
 
-# Install PgBouncer
-RUN dnf install -y pgbouncer && \
+# Install PgBouncer and PostgreSQL client for diagnostics
+RUN dnf install -y pgbouncer postgresql17 && \
     dnf clean all
 
 # Setup directories

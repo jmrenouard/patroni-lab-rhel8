@@ -7,10 +7,13 @@ Ce document présente l'architecture globale du cluster PostgreSQL Haute Disponi
 Le cluster est conçu pour la résilience avec une séparation stricte des rôles.
 
 ```mermaid
-graph LR
-    User([Utilisateur/App]) --> PGB[PgBouncer]
-    PGB -- "Port 5000 (RW)" --> LB[HAProxy]
+graph TD
+    AppDirect([App: Accès Direct]) --> LB[HAProxy]
+    AppPool([App: Accès Poolé]) --> PGB[PgBouncer]
+    
+    PGB -- "Port 5000 (RW)" --> LB
     PGB -- "Port 5001 (RO)" --> LB
+    
     LB -- "Port 5432 (PROXY v2)" --> Leader[Node Leader]
     LB -- "Port 5432 (PROXY v2)" --> Replica[Node Replica]
     

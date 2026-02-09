@@ -1,37 +1,28 @@
 #!/bin/bash
 # test_dck_patroni.sh
-# Validation interne de Patroni et PostgreSQL
+# Validation interne de Patroni et PostgreSQL - Version Verbeuse
 
 source .env
+source ./scripts/tests/test_utils.sh
 
-GREEN='\033[0;32m'
-RED='\033[0;31m'
-NC='\033[0m'
-
-echo "🐳 [DOCKER-TEST] Patroni/PG Internal Verification"
+echo -e "🐳 [DOCKER-TEST] Patroni/PG Internal Verification (Supervisor & Ports)\n"
 
 # 1. État du process Supervisor
-echo -n "⚙️ Process status (supervisord)... "
-if docker exec node1 ps aux | grep -v grep | grep -q "supervisord"; then
-    echo -e "${GREEN}OK${NC}"
-else
-    echo -e "${RED}FAIL${NC}"
-fi
+run_test "Vérification État du Processus (Supervisord)" \
+    "docker exec node1 ps aux | grep -v grep | grep -q 'supervisord'"
 
-# 2. Vérification des ports d'écoute (Interne)
-echo -n "🔌 Port Check (PG: ${INT_PG_PORT}, Patroni: ${INT_PATRONI_PORT})... "
-# Conversion des ports en hexa (5432 -> 1538, 8008 -> 1F48)
-if docker exec node1 grep -q "1538" /proc/net/tcp && \
-   docker exec node1 grep -q "1F48" /proc/net/tcp; then
-    echo -e "${GREEN}OK${NC}"
-else
-    echo -e "${RED}FAIL (Ports non écoutés)${NC}"
-fi
+# 2. Vérification des ports d'écoute
+run_test "Vérification Écoute Port PostgreSQL (5432)" "docker exec node1 netstat -tunl | grep -q ':5432 '"
+run_test "Vérification Écoute Port Patroni API (8008)" "docker exec node1 netstat -tunl | grep -q ':8008 '"
 
-# 3. Log Errors
-echo -n "📜 Log Error Check (Patroni)... "
-if ! docker exec node1 tail -n 50 /var/log/supervisor/patroni.err.log | grep -qi "error\|critical"; then
-    echo -e "${GREEN}OK (No critical errors)${NC}"
-else
-    echo -e "${YELLOW}WARNING (Check logs)${NC}"
-fi
+# 3. Log Error Check
+run_test "Vérification des erreurs critiques dans les logs Patroni" \
+    "! docker exec node1 tail -n 50 /var/log/supervisor/patroni.err.log | grep -qi 'error\|critical'"
+
+# Diagnostic final
+print_diagnostics "Patroni/PG (Interne)" \
+    "docker exec node1 supervisorctl status" \
+    "docker exec node1 netstat -tunlp"
+
+print_summary "test_dck_patroni.sh"
+exit $?

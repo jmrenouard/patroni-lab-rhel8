@@ -53,8 +53,11 @@ Analyse les dépendances et extrait les URLs des RPMs nécessaires pour le build
 ### [create_wheels.sh](../../scripts/install/create_wheels.sh)
 Télécharge les paquets Python (Whl) indispensables (ex: `etcd3`) pour l'installation de Patroni en mode offline.
 
-### [cleanup_all.sh](../../scripts/manage/cleanup_all.sh)
-Arrête tous les conteneurs et supprime les volumes ainsi que les images spécifiques au projet.
+### [cleanup_simple.sh](../../scripts/manage/cleanup_simple.sh)
+Arrête tous les conteneurs et supprime les volumes ainsi que les réseaux.
+
+### [cleanup_deep.sh](../../scripts/manage/cleanup_deep.sh)
+Nettoyage profond : suppression des conteneurs, volumes, réseaux, images du projet et assets générés (certs, ssh, etc.).
 
 ---
 

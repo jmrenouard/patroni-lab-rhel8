@@ -1,27 +1,24 @@
 #!/bin/bash
 # test_dck_haproxy.sh
-# Validation interne de HAProxy
+# Validation interne de HAProxy - Version Verbeuse
 
 source .env
+source ./scripts/tests/test_utils.sh
 
-GREEN='\033[0;32m'
-RED='\033[0;31m'
-NC='\033[0m'
-
-echo "🐳 [DOCKER-TEST] HAProxy Internal Verification"
+echo -e "🐳 [DOCKER-TEST] HAProxy Internal Verification\n"
 
 # 1. État du process
-echo -n "⚙️ Process status (haproxy)... "
-if docker exec haproxy ps aux | grep -v grep | grep -q "haproxy"; then
-    echo -e "${GREEN}OK${NC}"
-else
-    echo -e "${RED}FAIL${NC}"
-fi
+run_test "Vérification État du Processus (HAProxy)" \
+    "docker exec haproxy ps aux | grep -v grep | grep -q 'haproxy'"
 
-# 2. Test Stats API avec les nouveaux identifiants
-echo -n "📊 Stats API Auth check (Port ${INT_HAPROXY_STATS_PORT})... "
-if docker exec haproxy curl -s -k -u ${ADMIN_HAPROXY_USER}:${ADMIN_HAPROXY_PASSWORD} https://localhost:${INT_HAPROXY_STATS_PORT}/ | grep -q "HAProxy"; then
-    echo -e "${GREEN}OK${NC}"
-else
-    echo -e "${RED}FAIL (Auth ou Port)${NC}"
-fi
+# 2. Test Stats API Interne
+run_test "Vérification Auth API Stats (Interne: ${INT_HAPROXY_STATS_PORT})" \
+    "docker exec haproxy curl -s -k -u ${ADMIN_HAPROXY_USER}:${ADMIN_HAPROXY_PASSWORD} https://localhost:${INT_HAPROXY_STATS_PORT}/ | grep -q 'HAProxy'"
+
+# Diagnostic final
+print_diagnostics "HAProxy (Interne)" \
+    "docker exec haproxy haproxy -v" \
+    "docker exec haproxy ls -l /usr/local/etc/haproxy/haproxy.cfg"
+
+print_summary "test_dck_haproxy.sh"
+exit $?

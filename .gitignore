@@ -19,7 +19,6 @@ certs/pgbouncer.key
 certs/postgresql-server.crt
 certs/postgresql-server.csr
 certs/postgresql-server.key
-rpms_urls.txt
 reports/report_*.md
 wheels/**
 ssh/id_rsa
@@ -27,7 +26,6 @@ ssh/id_rsa.pub
 __pycache__/**
 __pycache__
 .agent/**
-.agent_origin/**
 .env
 reports/report_*
 certs/*

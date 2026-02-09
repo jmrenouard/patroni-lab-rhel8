@@ -29,17 +29,21 @@ help:
 	@echo "  make rebuild-all   - Full rebuild (down -> build -> up)"
 	@echo "  make ps            - Show running containers"
 	@echo "  make logs          - Follow logs"
-	@echo "  make clean         - Remove core assets (ssh, certs, images)"
-	@echo "  make cleanup       - Deep cleanup of all script-generated assets"
+	@echo "  make clean         - Simple cleanup (containers, volumes, networks)"
+	@echo "  make cleanup       - Deep cleanup (simple + images + generated assets)"
 	@echo ""
 	@echo "🔧 Independent Component Management:"
 	@echo "  make up-etcd       - Start only the ETCD cluster"
 	@echo "  make down-etcd     - Stop and remove only the ETCD cluster"
 	@echo ""
 	@echo "📊 Status & Health:"
-	@echo "  make status        - Check Patroni cluster status (from node1)"
-	@echo "  make etcd          - Check ETCD cluster health"
-	@echo "  make verify-cluster - Run comprehensive cluster verification"
+	@echo "  make status        - Check comprehensive cluster status (all components)"
+	@echo "  make status-etcd   - Check only ETCD cluster status"
+	@echo "  make status-patroni- Check only Patroni cluster status"
+	@echo "  make status-haproxy - Check only HAProxy status"
+	@echo "  make status-pgbouncer - Check only PgBouncer status"
+	@echo "  make etcd          - Check ETCD cluster health (raw)"
+	@echo "  make verify-cluster- Run comprehensive cluster verification"
 	@echo ""
 	@echo "🧪 Testing & Audit:"
 	@echo "  make verify        - Run basic component tests (ETCD, Patroni, HAProxy)"
@@ -120,7 +124,24 @@ ps:
 	docker compose -f $(COMPOSE_FILE) ps
 
 status:
-	@docker exec node1 patronictl -c /etc/patroni.yml list
+	@chmod +x scripts/manage/status.sh
+	@./scripts/manage/status.sh all
+
+status-etcd:
+	@chmod +x scripts/manage/status.sh
+	@./scripts/manage/status.sh etcd
+
+status-patroni:
+	@chmod +x scripts/manage/status.sh
+	@./scripts/manage/status.sh patroni
+
+status-haproxy:
+	@chmod +x scripts/manage/status.sh
+	@./scripts/manage/status.sh haproxy
+
+status-pgbouncer:
+	@chmod +x scripts/manage/status.sh
+	@./scripts/manage/status.sh pgbouncer
 
 etcd:
 	@docker exec etcd1 etcdctl --endpoints=https://etcd1:2379,https://etcd2:2379,https://etcd3:2379 --cacert=/certs/ca.crt --cert=/certs/etcd-client.crt --key=/certs/etcd-client.key --user root:${ETCD_ROOT_PASSWORD} endpoint health --cluster
@@ -155,13 +176,13 @@ install-tools:
 logs:
 	docker compose -f $(COMPOSE_FILE) logs -f
 
-clean: down
-	docker rmi $(IMAGE_NAME) || true
-	rm -rf ssh/ certs/ reports/ rpms_urls.txt wheels/
+clean:
+	@chmod +x scripts/manage/cleanup_simple.sh
+	./scripts/manage/cleanup_simple.sh
 
 cleanup:
-	@chmod +x scripts/manage/cleanup_all.sh
-	./scripts/manage/cleanup_all.sh
+	@chmod +x scripts/manage/cleanup_deep.sh
+	./scripts/manage/cleanup_deep.sh
 
 # Audit complet : Nettoyage, Build, Tests, Stress et Rapport
 big-test:

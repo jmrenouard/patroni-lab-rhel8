@@ -80,6 +80,6 @@ cat $CERT_DIR/postgresql-server.crt $CERT_DIR/postgresql-server.key > $CERT_DIR/
 
 echo "✅ Certificats générés avec SAN dans $CERT_DIR"
 
-chmod 755 $CERT_DIR
-chmod 644 $CERT_DIR/*.key
+chmod 700 $CERT_DIR
+chmod 600 $CERT_DIR/*.key
 chmod 644 $CERT_DIR/*.crt

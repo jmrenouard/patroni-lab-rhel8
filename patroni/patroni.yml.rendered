@@ -94,8 +94,8 @@ postgresql:
   # Configuration des accès (HBA) - Forcer le SSL et restreindre le superuser
   pg_hba:
     - host    all             postgres         127.0.0.1/32            md5
-    - hostssl all             all              0.0.0.0/0               cert
-    - hostssl replication     all              0.0.0.0/0               cert
+    - hostssl all             all              0.0.0.0/0               scram-sha-256
+    - hostssl replication     all              0.0.0.0/0               scram-sha-256
 
 # Tags pour la logique de bascule et topologie multi-DC
 tags:

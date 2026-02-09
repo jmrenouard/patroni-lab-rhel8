@@ -68,8 +68,8 @@ Pour valider le bon fonctionnement et la sécurité :
 Pour arrêter le cluster et nettoyer les ressources :
 
 - **Arrêt simple** : `make down`
-- **Nettoyage profond** (suppression des certs, clés et images) : `make clean`
-- **Nettoyage total des scripts** : `make cleanup`
+- **Nettoyage simple** (conteneurs, volumes, réseaux) : `make clean`
+- **Nettoyage profond** (simple + images + assets générés) : `make cleanup`
 
 ---
 > [!TIP]

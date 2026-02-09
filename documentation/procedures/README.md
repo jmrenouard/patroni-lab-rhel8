@@ -6,6 +6,9 @@ Ce répertoire contient l'ensemble des documentations sur les procédures d'admi
 
 ### 🛠️ Administration etcd 3.6
 
+> [!TIP]
+> Un récapitulatif détaillé des procédures etcd est disponible dans le **[README etcd](etcd/README.md)**.
+
 | Catégorie | Procédure | Document |
 | :--- | :--- | :--- |
 | **Sauvegarde** | Snapshot Full (Online) | [backup_full.md](file:///home/jmren/GIT_REPOS/patroni-lab-rhel8/documentation/procedures/etcd/backup_full.md) |
