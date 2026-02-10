@@ -190,3 +190,18 @@ big-test:
 	@chmod +x scripts/install/*.sh
 	@chmod +x scripts/tests/*.sh
 	@./scripts/manage/big_test.sh
+
+# --- GESTION MGMT-APP (GO) ---
+mgmt-build:
+	@echo "🛠️ Compilation de l'application de gestion..."
+	@export PATH=$${PATH}:/home/jmren/local_go/go/bin && \
+	 export GOROOT=/home/jmren/local_go/go && \
+	 cd mgmt-app && go build -o mgmt-app main.go
+
+mgmt-run: mgmt-build
+	@echo "🚀 Lancement de l'application de gestion..."
+	@cd mgmt-app && ./mgmt-app
+
+mgmt-clean:
+	@echo "🧹 Nettoyage de l'application de gestion..."
+	@rm -f mgmt-app/mgmt-app

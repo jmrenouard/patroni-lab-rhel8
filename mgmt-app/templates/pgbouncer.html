@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PgBouncer - Patroni Lab</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Outfit:wght@400;700&display=swap"
+        rel="stylesheet">
+</head>
+
+<body>
+    <div class="glass-container">
+        <header>
+            <h1>Console <span class="badge">PgBouncer</span></h1>
+            <p>Gestion du Pool de Connexions</p>
+        </header>
+
+        <nav class="nav-bar">
+            <a href="/" class="nav-link">Tableau de Bord</a>
+            <a href="/etcd" class="nav-link">ETCD</a>
+            <a href="/patroni" class="nav-link">Patroni/Postgres</a>
+            <a href="/haproxy" class="nav-link">HAProxy</a>
+            <a href="/pgbouncer" class="nav-link active">PgBouncer</a>
+        </nav>
+
+        <section class="control-bar">
+            <div class="batch-group">
+                <button class="batch-btn primary" onclick="batchControl('pgbouncer', 'start')">🧱 Démarrer
+                    PgBouncer</button>
+                <button class="batch-btn stop" onclick="batchControl('pgbouncer', 'stop')">🛑 Arrêter PgBouncer</button>
+            </div>
+        </section>
+
+        <main>
+            <section id="containers">
+                <h2>Pooler de connexions</h2>
+                <div class="container-list" id="container-list">
+                    <!-- Filtré pour PgBouncer -->
+                </div>
+            </section>
+
+            <section class="diagnostic-container">
+                <h3>🔍 Diagnostic Avancé</h3>
+                <pre class="diagnostic-output" id="diag-output">Chargement des diagnostics...</pre>
+            </section>
+        </main>
+    </div>
+
+    <!-- Modal pour les Logs -->
+    <div id="log-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="log-title">Logs du Container</h2>
+                <span class="close-modal"
+                    onclick="document.getElementById('log-modal').style.display='none'">&times;</span>
+            </div>
+            <pre id="log-viewer" class="log-viewer">Chargement...</pre>
+            <div style="text-align: right;">
+                <button onclick="document.getElementById('log-modal').style.display='none'">Fermer</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/app.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ETCD - Patroni Lab</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Outfit:wght@400;700&display=swap"
+        rel="stylesheet">
+</head>
+
+<body>
+    <div class="glass-container">
+        <header>
+            <h1>Console <span class="badge">ETCD</span></h1>
+            <p>Gestion du Quorum et du Consensus</p>
+        </header>
+
+        <nav class="nav-bar">
+            <a href="/" class="nav-link">Tableau de Bord</a>
+            <a href="/etcd" class="nav-link active">ETCD</a>
+            <a href="/patroni" class="nav-link">Patroni/Postgres</a>
+            <a href="/haproxy" class="nav-link">HAProxy</a>
+            <a href="/pgbouncer" class="nav-link">PgBouncer</a>
+        </nav>
+
+        <section class="control-bar">
+            <div class="batch-group">
+                <button class="batch-btn primary" onclick="batchControl('etcd', 'start')">⚡ Démarrer Cluster
+                    ETCD</button>
+                <button class="batch-btn stop" onclick="batchControl('etcd', 'stop')">🛑 Arrêter Cluster ETCD</button>
+            </div>
+        </section>
+
+        <main>
+            <section id="containers">
+                <h2>Noeuds ETCD</h2>
+                <div class="container-list" id="container-list">
+                    <!-- Filtré pour ETCD -->
+                </div>
+            </section>
+
+            <section id="etcd-explorer" class="diagnostic-container">
+                <h3>📂 Explorateur de Clés ETCD</h3>
+                <div class="control-bar" style="margin-top: 1rem; background: rgba(255,255,255,0.01); display: block;">
+                    <div style="display: flex; gap: 10px; margin-bottom: 1rem;">
+                        <input type="text" id="etcd-prefix" value="/"
+                            style="flex-grow: 1; background: #000; border: 1px solid var(--glass-border); color: #fff; padding: 8px; border-radius: 8px;">
+                        <button onclick="exploreEtcd()">Explorer</button>
+                    </div>
+                    <ul id="etcd-keys"
+                        style="list-style: none; padding: 0; max-height: 300px; overflow-y: auto; font-family: monospace; font-size: 0.85rem; color: var(--accent);">
+                        <!-- Rempli par JS -->
+                    </ul>
+                </div>
+            </section>
+
+            <section class="diagnostic-container">
+                <h3>🔍 Diagnostic Avancé</h3>
+                <pre class="diagnostic-output" id="diag-output">Chargement des diagnostics...</pre>
+            </section>
+        </main>
+    </div>
+
+    <!-- Modal pour les Logs -->
+    <div id="log-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="log-title">Logs du Container</h2>
+                <span class="close-modal"
+                    onclick="document.getElementById('log-modal').style.display='none'">&times;</span>
+            </div>
+            <pre id="log-viewer" class="log-viewer">Chargement...</pre>
+            <div style="text-align: right;">
+                <button onclick="document.getElementById('log-modal').style.display='none'">Fermer</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/app.js"></script>
+</body>
+
+</html>

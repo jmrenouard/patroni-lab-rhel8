@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Patroni Lab - Console de Gestion</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Outfit:wght@400;700&display=swap"
+        rel="stylesheet">
+</head>
+
+<body>
+    <div class="glass-container">
+        <header>
+            <h1>Patroni Lab <span class="badge">RHEL 8</span></h1>
+            <p>Ecosystème PostgreSQL Haute Disponibilité</p>
+        </header>
+
+        <nav class="nav-bar">
+            <a href="/" class="nav-link active">Tableau de Bord</a>
+            <a href="/etcd" class="nav-link">ETCD</a>
+            <a href="/patroni" class="nav-link">Patroni/Postgres</a>
+            <a href="/haproxy" class="nav-link">HAProxy</a>
+            <a href="/pgbouncer" class="nav-link">PgBouncer</a>
+        </nav>
+
+        <section class="control-bar">
+            <div class="batch-group">
+                <button class="batch-btn primary" onclick="batchControl('all', 'start')">🚀 Démarrer Tout</button>
+                <button class="batch-btn stop" onclick="batchControl('all', 'stop')">🛑 Arrêter Tout</button>
+            </div>
+            <div class="batch-group">
+                <button class="batch-btn" onclick="batchControl('etcd', 'start')">⚡ Démarrer ETCD</button>
+                <button class="batch-btn stop-lite" onclick="batchControl('etcd', 'stop')">Arrêter ETCD</button>
+            </div>
+            <div class="batch-group">
+                <button class="batch-btn" onclick="batchControl('node', 'start')">🐘 Démarrer Patroni</button>
+                <button class="batch-btn stop-lite" onclick="batchControl('node', 'stop')">Arrêter Patroni</button>
+            </div>
+            <div class="batch-group">
+                <button class="batch-btn" onclick="batchControl('pgbouncer', 'start')">🧱 Démarrer PgBouncer</button>
+                <button class="batch-btn stop-lite" onclick="batchControl('pgbouncer', 'stop')">Arrêter
+                    PgBouncer</button>
+            </div>
+            <div class="batch-group">
+                <button class="batch-btn" onclick="batchControl('haproxy', 'start')">🌐 Démarrer HAProxy</button>
+                <button class="batch-btn stop-lite" onclick="batchControl('haproxy', 'stop')">Arrêter HAProxy</button>
+            </div>
+        </section>
+
+        <main>
+            <section id="cluster-health">
+                <h2>État du Cluster</h2>
+                <div class="health-grid" id="health-grid">
+                    <!-- Rempli dynamiquement -->
+                </div>
+            </section>
+
+            <section id="certs-section" class="diagnostic-container">
+                <h3>🛡️ Monitoring des Certificats mTLS</h3>
+                <div id="cert-list"
+                    style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 10px; margin-top: 1rem;">
+                    <!-- Rempli par JS -->
+                </div>
+            </section>
+
+            <section id="containers">
+                <h2>Infrastructure (Containers)</h2>
+                <div class="container-list" id="container-list">
+                    <!-- Rempli dynamiquement -->
+                </div>
+            </section>
+        </main>
+
+        </footer>
+    </div>
+
+    <!-- Modal pour les Logs -->
+    <div id="log-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="log-title">Logs du Container</h2>
+                <span class="close-modal"
+                    onclick="document.getElementById('log-modal').style.display='none'">&times;</span>
+            </div>
+            <pre id="log-viewer" class="log-viewer">Chargement...</pre>
+            <div style="text-align: right;">
+                <button onclick="document.getElementById('log-modal').style.display='none'">Fermer</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/app.js"></script>
+</body>
+
+</html>
