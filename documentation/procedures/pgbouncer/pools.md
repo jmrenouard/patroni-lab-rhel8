@@ -12,27 +12,15 @@ Surveiller l'utilisation des connexions côté client et côté serveur pour opt
 ### 1. Afficher les statistiques des pools
 Permet de voir combien de clients sont actifs, en attente (`cl_waiting`), ou combien de connexions serveurs sont ouvertes.
 
-**Docker :**
 ```bash
-docker exec -it pgbouncer psql -U postgres -p 6432 -h localhost -c "SHOW POOLS" pgbouncer
-```
-
-**SSH (Alternative) :**
-```bash
-ssh ${PGBOUNCER_HOST} "psql -U postgres -p 6432 -h localhost -c 'SHOW POOLS' pgbouncer"
+psql -U postgres -p 6432 -h localhost -c "SHOW POOLS" pgbouncer
 ```
 
 ### 2. Forcer le rechargement de la configuration
 Si le fichier `pgbouncer.ini` ou `userlist.txt` est modifié.
 
-**Docker :**
 ```bash
-docker exec -it pgbouncer psql -U postgres -p 6432 -h localhost -c "RELOAD" pgbouncer
-```
-
-**SSH (Alternative) :**
-```bash
-ssh ${PGBOUNCER_HOST} "psql -U postgres -p 6432 -h localhost -c 'RELOAD' pgbouncer"
+psql -U postgres -p 6432 -h localhost -c "RELOAD" pgbouncer
 ```
 
 ### 3. Suspendre / Reprendre le trafic

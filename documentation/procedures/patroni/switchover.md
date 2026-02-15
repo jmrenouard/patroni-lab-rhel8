@@ -19,14 +19,8 @@ Transférer le rôle de Leader d'un nœud vers un autre de manière contrôlée 
 ### 1. Lancement de la bascule
 Utiliser la commande interactive pour choisir la cible.
 
-**Docker :**
 ```bash
-docker exec -it node1 patronictl -c /etc/patroni.yml switchover
-```
-
-**SSH (Alternative) :**
-```bash
-ssh -t ${PATRONI_NODE} "patronictl -c /etc/patroni.yml switchover"
+patronictl -c /etc/patroni.yml switchover
 ```
 
 ### 2. Validation
@@ -39,7 +33,7 @@ Suivre les instructions à l'écran :
 ### 3. Vérification
 Vérifier que le changement de rôle est effectif.
 ```bash
-docker exec node1 patronictl -c /etc/patroni.yml list
+patronictl -c /etc/patroni.yml list
 ```
 
 > [!IMPORTANT]

@@ -27,9 +27,9 @@ cp certs_new/pgbouncer.key certs/pgbouncer.key
 ### 3. Rechargement de PgBouncer
 PgBouncer peut recharger sa configuration (et ses certificats) sans couper les connexions existantes via un `RELOAD`.
 
-#### Via Docker :
+#### Rechargement :
 ```bash
-docker exec -it pgbouncer pgbouncer -R -u pgbouncer /etc/pgbouncer/pgbouncer.ini
+pgbouncer -R -u pgbouncer /etc/pgbouncer/pgbouncer.ini
 ```
 
 ### 4. Vérification

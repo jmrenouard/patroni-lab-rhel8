@@ -12,44 +12,26 @@ Désactiver temporairement la gestion automatique du cluster (Failover) pour eff
 ### 1. Activer le mode Maintenance (Pause)
 Cette commande place le cluster en mode `paused`. Patroni ne tentera plus de promouvoir de nœud ou de gérer l'état de PostgreSQL.
 
-**Docker :**
 ```bash
-docker exec node1 patronictl -c /etc/patroni.yml pause
-```
-
-**SSH (Alternative) :**
-```bash
-ssh ${PATRONI_NODE} "patronictl -c /etc/patroni.yml pause"
+patronictl -c /etc/patroni.yml pause
 ```
 
 ### 2. Vérification du statut
 L'état du cluster doit afficher `Maintenance` ou `Paused`.
 
-**Docker :**
 ```bash
-docker exec node1 patronictl -c /etc/patroni.yml list
-```
-
-**SSH (Alternative) :**
-```bash
-ssh ${PATRONI_NODE} "patronictl -c /etc/patroni.yml list"
+patronictl -c /etc/patroni.yml list
 ```
 
 ### 3. Désactiver le mode Maintenance (Resume)
 Une fois les opérations terminées, rétablir la gestion automatique.
 
-**Docker :**
 ```bash
-docker exec node1 patronictl -c /etc/patroni.yml resume
-```
-
-**SSH (Alternative) :**
-```bash
-ssh ${PATRONI_NODE} "patronictl -c /etc/patroni.yml resume"
+patronictl -c /etc/patroni.yml resume
 ```
 
 ### 4. Rechargement de la configuration
 Appliquer des modifications faites dans `patroni.yml` sans redémarrer le service (si possible).
 ```bash
-docker exec node1 patronictl -c /etc/patroni.yml reload <nom_du_noeud>
+patronictl -c /etc/patroni.yml reload <nom_du_noeud>
 ```

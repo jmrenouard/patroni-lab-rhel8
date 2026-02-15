@@ -23,7 +23,7 @@ echo '"mon_user" "md5hash_genere"' >> pgbouncer/userlist.txt
 
 ### 3. Recharger PgBouncer
 ```bash
-docker exec -it pgbouncer kill -HUP 1
+kill -HUP 1
 ```
 
 ## 🔐 Bonnes Pratiques

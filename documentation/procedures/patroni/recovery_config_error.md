@@ -42,7 +42,7 @@ vi /etc/patroni.yml
 Patroni stocke sa configuration dans ETCD, qui prime sur le fichier local.
 ```bash
 # Vérifier la configuration actuelle dans ETCD
-docker exec etcd1 etcdctl --cacert=/certs/ca.crt --cert=/certs/etcd-client.crt --key=/certs/etcd-client.key \
+etcdctl --cacert=/certs/ca.crt --cert=/certs/etcd-client.crt --key=/certs/etcd-client.key \
   get /service/patroni-cluster/config
 ```
 
@@ -51,7 +51,7 @@ Si la configuration dans DCS est erronée, il faut la corriger ou la supprimer p
 
 **Option A : Supprimer la configuration DCS (Recommandé pour repartir du local)**
 ```bash
-docker exec etcd1 etcdctl --cacert=/certs/ca.crt --cert=/certs/etcd-client.crt --key=/certs/etcd-client.key \
+etcdctl --cacert=/certs/ca.crt --cert=/certs/etcd-client.crt --key=/certs/etcd-client.key \
   del /service/patroni-cluster/config
 ```
 

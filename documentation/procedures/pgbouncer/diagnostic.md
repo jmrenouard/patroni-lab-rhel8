@@ -15,14 +15,8 @@ S'assurer que PgBouncer accepte les connexions et transmet correctement les requ
 ### 1. Connexion à la console d'administration
 PgBouncer dispose d'une base de données virtuelle nommée `pgbouncer` pour l'administration.
 
-**Docker :**
 ```bash
-docker exec -it pgbouncer psql -U postgres -p 6432 -h localhost pgbouncer
-```
-
-**SSH (Alternative) :**
-```bash
-ssh ${PGBOUNCER_HOST} "psql -U postgres -p 6432 -h localhost pgbouncer"
+psql -U postgres -p 6432 -h localhost pgbouncer
 ```
 
 ### 2. Vérification de la version et du statut
@@ -35,17 +29,11 @@ SHOW SERVERS;
 ### 3. Test de connectivité applicative
 Passer par le pooler pour joindre la base réelle.
 
-**Local / Docker :**
 ```bash
 psql "host=localhost port=6432 dbname=postgres_rw user=postgres" -c "SELECT now();"
 ```
 
-**SSH (Alternative) :**
-```bash
-ssh ${PGBOUNCER_HOST} "psql \"host=localhost port=6432 dbname=postgres_rw user=postgres\" -c \"SELECT now();\""
-```
-
 ### 4. Analyse des logs
 ```bash
-docker logs pgbouncer -f
+journalctl -u pgbouncer.service -f
 ```

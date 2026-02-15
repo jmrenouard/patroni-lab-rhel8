@@ -18,7 +18,7 @@ Cette procédure décrit comment appliquer des correctifs de sécurité (OS) ou 
 
 Avant de commencer, validez l'état du cluster :
 ```bash
-docker exec node1 patronictl -c /etc/patroni.yml list
+patronictl -c /etc/patroni.yml list
 ```
 
 ### 2. Mise à jour des Nœuds Replicas (Séquentiel)
@@ -27,7 +27,7 @@ Effectuez ces étapes sur chaque replica, **un par un** :
 
 1. **Mise en maintenance locale** (Optionnel mais recommandé) :
    ```bash
-   docker exec -it <node_name> patronictl -c /etc/patroni.yml pause
+   patronictl -c /etc/patroni.yml pause
    ```
 2. **Arrêt du conteneur/service** :
    ```bash
@@ -41,8 +41,8 @@ Effectuez ces étapes sur chaque replica, **un par un** :
    ```
 5. **Sortie de maintenance et vérification** :
    ```bash
-   docker exec -it <node_name> patronictl -c /etc/patroni.yml resume
-   docker exec -it <node_name> patronictl -c /etc/patroni.yml list
+   patronictl -c /etc/patroni.yml resume
+   patronictl -c /etc/patroni.yml list
    ```
    *Attendez que le nœud soit à nouveau en état `running` et synchronisé avant de passer au suivant.*
 
@@ -53,7 +53,7 @@ Une fois tous les replicas à jour :
 1. **Bascule contrôlée** :
    Transférez le rôle de leader vers un nœud déjà mis à jour.
    ```bash
-   docker exec -it node1 patronictl -c /etc/patroni.yml switchover
+   patronictl -c /etc/patroni.yml switchover
    ```
 2. **Mise à jour de l'ancien leader** :
    Suivez les mêmes étapes que pour les replicas (Arrêt -> Update -> Start).

@@ -28,14 +28,8 @@ Global (Cluster)
 ### 1. Vue d'ensemble du Cluster
 Affiche la liste des membres, leur état, leur rôle et leur retard de réplication.
 
-**Docker :**
 ```bash
-docker exec node1 patronictl -c /etc/patroni.yml list
-```
-
-**SSH (Alternative) :**
-```bash
-ssh ${PATRONI_NODE} "patronictl -c /etc/patroni.yml list"
+patronictl -c /etc/patroni.yml list
 ```
 
 ### 2. Statut détaillé d'un membre
@@ -55,14 +49,8 @@ ssh ${PATRONI_NODE} "curl -s -k -u \"admin:secret\" https://localhost:8008/healt
 ### 3. Configuration Dynamique
 Vérifier les paramètres DCS (Distributed Configuration Store).
 
-**Docker :**
 ```bash
-docker exec node1 patronictl -c /etc/patroni.yml show-config
-```
-
-**SSH (Alternative) :**
-```bash
-ssh ${PATRONI_NODE} "patronictl -c /etc/patroni.yml show-config"
+patronictl -c /etc/patroni.yml show-config
 ```
 
 ### 4. Analyse des logs
