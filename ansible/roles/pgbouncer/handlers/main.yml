@@ -1,0 +1,4 @@
+---
+- name: redémarrer pgbouncer
+  command: supervisorctl restart pgbouncer
+  ignore_errors: yes

@@ -1,0 +1,4 @@
+---
+- name: redémarrer haproxy
+  command: supervisorctl restart haproxy
+  ignore_errors: yes

@@ -1,0 +1,4 @@
+---
+- name: redémarrer etcd
+  command: supervisorctl restart etcd
+  ignore_errors: yes

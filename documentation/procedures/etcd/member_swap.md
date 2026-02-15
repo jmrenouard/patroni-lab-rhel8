@@ -1,5 +1,9 @@
 # Remplacement d'un nœud (Swap)
 
+> [!NOTE]
+> **Automatisation :** Une version scriptée de cette procédure est disponible : 
+> [scripts/procedures/etcd/member_swap.sh](file:///home/jmren/GIT_REPOS/patroni-lab-rhel8/scripts/procedures/etcd/member_swap.sh)
+
 ## Objectifs:
 Remplacer un membre du cluster par un nouveau (suite à une panne matérielle ou un changement d'IP) sans interruption de service globale.
 

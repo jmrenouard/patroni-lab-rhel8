@@ -30,3 +30,9 @@ __pycache__
 reports/report_*
 certs/*
 .env
+mgmt-app/mgmt.db
+mgmt-app/mgmt.log
+mgmt-app/cookie.txt
+mgmt-app/audit.json
+certs_app/
+certs_new/

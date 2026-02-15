@@ -8,6 +8,10 @@ set -e
 PROC_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$PROC_DIR/../common.sh"
 
+# Note: check_etcdctl n'est pas strictement requis car on utilise etcdutl, 
+# mais il est bon de l'avoir pour le contexte.
+check_etcdctl
+
 BACKUP_DB=$1
 NAME=$2
 INITIAL_CLUSTER=$3
@@ -34,6 +38,7 @@ log_info "sudo systemctl stop etcd"
 
 # Étape 2 : Restauration
 log_info "Étape 2 : Restauration du snapshot $BACKUP_DB dans $DATA_DIR"
+# Alternative SSH : ssh ${ETCD_NODE} "etcdutl snapshot restore $BACKUP_DB --name $NAME --initial-cluster $INITIAL_CLUSTER --initial-cluster-token ${INITIAL_CLUSTER_TOKEN:-etcd-cluster-token} --initial-advertise-peer-urls ${INITIAL_ADVERTISE_PEER_URLS:-https://127.0.0.1:2380} --data-dir $DATA_DIR"
 etcdutl snapshot restore "$BACKUP_DB" \
   --name "$NAME" \
   --initial-cluster "$INITIAL_CLUSTER" \

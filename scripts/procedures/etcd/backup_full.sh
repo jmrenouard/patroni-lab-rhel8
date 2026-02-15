@@ -8,12 +8,15 @@ set -e
 PROC_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$PROC_DIR/../common.sh"
 
+check_etcdctl
+
 BACKUP_FILE="backup_$(date +%Y%m%d_%H%M%S).db"
 
 log_info "Début de la procédure : Sauvegarde complète etcd"
 
 # Étape 1 : Export du snapshot
 log_info "Étape 1 : Export du snapshot vers $BACKUP_FILE"
+# Alternative SSH : ssh ${ETCD_NODE} "etcdctl snapshot save $BACKUP_FILE"
 etcdctl snapshot save "$BACKUP_FILE"
 
 # Étape 2 : Vérification d'intégrité

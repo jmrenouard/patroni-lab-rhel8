@@ -1,0 +1,29 @@
+---
+- name: Déployer le cluster Patroni RHEL 8
+  hosts: all
+  roles:
+    - common
+
+- name: Configurer le quorum ETCD
+  hosts: etcd_cluster
+  become: yes
+  roles:
+    - etcd
+
+- name: Configurer les nœuds PostgreSQL et Patroni
+  hosts: pg_cluster
+  become: yes
+  roles:
+    - patroni_pg
+
+- name: Configurer l'équilibrage de charge HAProxy
+  hosts: haproxy
+  become: yes
+  roles:
+    - haproxy
+
+- name: Configurer le pooling PgBouncer
+  hosts: pgbouncer
+  become: yes
+  roles:
+    - pgbouncer

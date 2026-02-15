@@ -8,6 +8,8 @@ set -e
 PROC_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$PROC_DIR/../common.sh"
 
+check_etcdctl
+
 log_info "Début de la procédure : Gestion des Accès (RBAC)"
 
 # Note : Une fois l'auth activée, les commandes suivantes nécessitent --user root:password
@@ -18,6 +20,7 @@ ROOT_PWD="${ETCD_ROOT_PASSWORD:-MyStrongPassword}"
 
 # Étape 1 : Création de l'admin root
 log_info "Étape 1 : Création de l'utilisateur root (si non existant)"
+# Alternative SSH : ssh ${ETCD_NODE} "etcdctl user add $ROOT_USER:$ROOT_PWD"
 etcdctl user add "$ROOT_USER:$ROOT_PWD" || log_warn "Root déjà existant."
 
 # Étape 2 : Création d'un rôle (exemple app-manager)

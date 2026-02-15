@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Audit - Patroni Lab</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Outfit:wght@400;700&display=swap"
+        rel="stylesheet">
+</head>
+
+<body>
+    <div class="glass-container">
+        <header>
+            <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                <div>
+                    <h1>Journal d' <span class="badge">Audit</span></h1>
+                    <p>Historique des actions d'administration du cluster</p>
+                </div>
+                <div class="header-actions">
+                    <button class="theme-toggle" onclick="toggleTheme()" title="Changer de thème">🌓</button>
+                    <input type="text" id="search-audit" class="search-input" placeholder="Filtrer les actions..."
+                        oninput="filterAudit()">
+                </div>
+            </div>
+        </header>
+
+        <nav class="nav-bar">
+            <a href="/" class="nav-link">Tableau de Bord</a>
+            <a href="/etcd" class="nav-link">ETCD</a>
+            <a href="/patroni" class="nav-link">Patroni/Postgres</a>
+            <a href="/haproxy" class="nav-link">HAProxy</a>
+            <a href="/pgbouncer" class="nav-link">PgBouncer</a>
+            <a href="/audit" class="nav-link active">Audit</a>
+            <button class="logout-btn" onclick="logout()">Déconnexion 🚪</button>
+        </nav>
+
+        <main>
+            <section class="audit-table-container">
+                <table class="audit-table" id="audit-table">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Utilisateur</th>
+                            <th>Action</th>
+                            <th>Cible</th>
+                            <th>Détails</th>
+                            <th>Résultat</th>
+                        </tr>
+                    </thead>
+                    <tbody id="audit-body">
+                        <!-- Rempli dynamiquement -->
+                    </tbody>
+                </table>
+            </section>
+        </main>
+    </div>
+
+    <script src="/static/app.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            fetchAuditLogs();
+            // Polling logs every 10s
+            setInterval(fetchAuditLogs, 10000);
+        });
+
+        async function fetchAuditLogs() {
+            try {
+                const response = await fetch('/api/audit');
+                const data = await response.json();
+                renderAudit(data);
+            } catch (e) {
+                console.error("Audit Fetch Error:", e);
+            }
+        }
+
+        function renderAudit(logs) {
+            const body = document.getElementById('audit-body');
+            body.innerHTML = '';
+            logs.reverse().forEach(log => {
+                const row = document.createElement('tr');
+                const date = new Date(log.timestamp).toLocaleString();
+                row.innerHTML = `
+                    <td style="white-space: nowrap;">${date}</td>
+                    <td>${log.user}</td>
+                    <td><span style="font-weight: 600;">${log.action}</span></td>
+                    <td style="color: var(--accent);">${log.target}</td>
+                    <td style="font-size: 0.75rem; max-width: 300px; overflow: hidden; text-overflow: ellipsis;">${log.details}</td>
+                    <td><span class="status-badge ${log.result.toLowerCase()}">${log.result}</span></td>
+                `;
+                body.appendChild(row);
+            });
+        }
+
+        function filterAudit() {
+            const val = document.getElementById('search-audit').value.toLowerCase();
+            const rows = document.querySelectorAll('#audit-body tr');
+            rows.forEach(row => {
+                row.style.display = row.textContent.toLowerCase().includes(val) ? '' : 'none';
+            });
+        }
+    </script>
+</body>
+
+</html>

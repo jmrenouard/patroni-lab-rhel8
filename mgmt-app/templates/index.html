@@ -13,8 +13,17 @@
 <body>
     <div class="glass-container">
         <header>
-            <h1>Patroni Lab <span class="badge">RHEL 8</span></h1>
-            <p>Ecosystème PostgreSQL Haute Disponibilité</p>
+            <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                <div>
+                    <h1>Patroni Lab <span class="badge">RHEL 8</span></h1>
+                    <p>Ecosystème PostgreSQL Haute Disponibilité</p>
+                </div>
+                <div class="header-actions">
+                    <button class="theme-toggle" onclick="toggleTheme()" title="Changer de thème">🌓</button>
+                    <input type="text" id="search-containers" class="search-input"
+                        placeholder="Filtrer les containers..." oninput="filterContainers()">
+                </div>
+            </div>
         </header>
 
         <nav class="nav-bar">
@@ -23,29 +32,42 @@
             <a href="/patroni" class="nav-link">Patroni/Postgres</a>
             <a href="/haproxy" class="nav-link">HAProxy</a>
             <a href="/pgbouncer" class="nav-link">PgBouncer</a>
+            <a href="/audit" class="nav-link">Audit</a>
+            <a href="/admin" class="nav-link">Admin ⚙️</a>
+            <button class="logout-btn" onclick="logout()">Déconnexion 🚪</button>
         </nav>
+        <script src="/static/chart.min.js"></script>
 
         <section class="control-bar">
             <div class="batch-group">
-                <button class="batch-btn primary" onclick="batchControl('all', 'start')">🚀 Démarrer Tout</button>
-                <button class="batch-btn stop" onclick="batchControl('all', 'stop')">🛑 Arrêter Tout</button>
+                <button class="batch-btn primary" onclick="batchControl('all', 'start')"
+                    data-tooltip="Démarre tous les containers de l'infrastructure">🚀 Démarrer Tout</button>
+                <button class="batch-btn stop" onclick="batchControl('all', 'stop')"
+                    data-tooltip="Arrête proprement tous les services">🛑 Arrêter Tout</button>
             </div>
             <div class="batch-group">
-                <button class="batch-btn" onclick="batchControl('etcd', 'start')">⚡ Démarrer ETCD</button>
-                <button class="batch-btn stop-lite" onclick="batchControl('etcd', 'stop')">Arrêter ETCD</button>
+                <button class="batch-btn" onclick="batchControl('etcd', 'start')"
+                    data-tooltip="Démarre le cluster de consensus ETCD">⚡ Démarrer ETCD</button>
+                <button class="batch-btn stop-lite" onclick="batchControl('etcd', 'stop')"
+                    data-tooltip="Arrête le stockage d'état">Arrêter ETCD</button>
             </div>
             <div class="batch-group">
-                <button class="batch-btn" onclick="batchControl('node', 'start')">🐘 Démarrer Patroni</button>
-                <button class="batch-btn stop-lite" onclick="batchControl('node', 'stop')">Arrêter Patroni</button>
+                <button class="batch-btn" onclick="batchControl('node', 'start')"
+                    data-tooltip="Démarre les instances PostgreSQL/Patroni">🐘 Démarrer Patroni</button>
+                <button class="batch-btn stop-lite" onclick="batchControl('node', 'stop')"
+                    data-tooltip="Arrête la base de données">Arrêter Patroni</button>
             </div>
             <div class="batch-group">
-                <button class="batch-btn" onclick="batchControl('pgbouncer', 'start')">🧱 Démarrer PgBouncer</button>
-                <button class="batch-btn stop-lite" onclick="batchControl('pgbouncer', 'stop')">Arrêter
-                    PgBouncer</button>
+                <button class="batch-btn" onclick="batchControl('pgbouncer', 'start')"
+                    data-tooltip="Démarre le pooler de connexions">🧱 Démarrer PgBouncer</button>
+                <button class="batch-btn stop-lite" onclick="batchControl('pgbouncer', 'stop')"
+                    data-tooltip="Arrête le proxy SQL">Arrêter PgBouncer</button>
             </div>
             <div class="batch-group">
-                <button class="batch-btn" onclick="batchControl('haproxy', 'start')">🌐 Démarrer HAProxy</button>
-                <button class="batch-btn stop-lite" onclick="batchControl('haproxy', 'stop')">Arrêter HAProxy</button>
+                <button class="batch-btn" onclick="batchControl('haproxy', 'start')"
+                    data-tooltip="Démarre l'équilibreur de charge">🌐 Démarrer HAProxy</button>
+                <button class="batch-btn stop-lite" onclick="batchControl('haproxy', 'stop')"
+                    data-tooltip="Arrête le routage SQL">Arrêter HAProxy</button>
             </div>
         </section>
 

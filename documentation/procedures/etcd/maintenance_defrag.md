@@ -1,5 +1,9 @@
 # Défragmentation et Compactage
 
+> [!NOTE]
+> **Automatisation :** Une version scriptée de cette procédure est disponible : 
+> [scripts/procedures/etcd/maintenance_defrag.sh](file:///home/jmren/GIT_REPOS/patroni-lab-rhel8/scripts/procedures/etcd/maintenance_defrag.sh)
+
 ## Objectifs:
 Optimiser les performances et l'utilisation du stockage en libérant l'espace disque physique (défragmentation) et en supprimant l'historique des révisions obsolètes (compactage).
 

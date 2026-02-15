@@ -1,0 +1,3 @@
+---
+cert_dir: "/home/jmren/GIT_REPOS/patroni-lab-rhel8/ansible/certs"
+ca_common_name: "Patroni-Lab-CA"

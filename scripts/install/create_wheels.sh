@@ -7,8 +7,7 @@ echo "📦 Création des wheels pour l'installation hors-ligne..."
 mkdir -p wheels
 /usr/bin/python3.12 -m pip download \
     --dest wheels \
-    "urllib3<2.0.0" \
-    etcd3
+    patroni
 
 echo "✅ Wheels créés dans le dossier ./wheels"
-echo "💡 Usage hors-ligne : pip install --no-index --find-links=./wheels etcd3"
+echo "💡 Usage hors-ligne : pip install --no-index --find-links=./wheels patroni"

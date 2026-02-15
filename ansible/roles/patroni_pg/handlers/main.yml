@@ -1,0 +1,4 @@
+---
+- name: redémarrer patroni
+  command: supervisorctl restart patroni
+  ignore_errors: yes

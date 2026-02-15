@@ -8,10 +8,13 @@ set -e
 PROC_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$PROC_DIR/../common.sh"
 
+check_etcdctl
+
 log_info "Début de la procédure : Défragmentation etcd"
 
 # Étape 1 : Vérification de la fragmentation
 log_info "Étape 1 : État actuel de la base (Vérifiez la colonne DB SIZE vs APPLIED INDEX)"
+# Alternative SSH : ssh ${ETCD_NODE} "etcdctl endpoint status --cluster -w table"
 etcdctl endpoint status --cluster -w table
 
 # Étape 2 : Défragmentation par cluster

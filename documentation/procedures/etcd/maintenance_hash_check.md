@@ -1,5 +1,9 @@
 # Vérification de corruption (Hash Check)
 
+> [!NOTE]
+> **Automatisation :** Une version scriptée de cette procédure est disponible : 
+> [scripts/procedures/etcd/maintenance_hash_check.sh](file:///home/jmren/GIT_REPOS/patroni-lab-rhel8/scripts/procedures/etcd/maintenance_hash_check.sh)
+
 ## Objectifs:
 Détecter d'éventuelles divergences ou corruptions de données entre les différents membres du cluster en comparant leurs empreintes numériques (hash).
 

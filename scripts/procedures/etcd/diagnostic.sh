@@ -8,10 +8,13 @@ set -e
 PROC_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$PROC_DIR/../common.sh"
 
+check_etcdctl
+
 log_info "Début de la procédure : Diagnostic du cluster etcd"
 
 # Étape 1 : Santé globale
 log_info "Étape 1 : Santé globale du cluster"
+# Alternative SSH : ssh ${ETCD_NODE} "etcdctl endpoint health --cluster -w table"
 etcdctl endpoint health --cluster -w table
 
 # Étape 2 : Statut détaillé

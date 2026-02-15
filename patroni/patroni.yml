@@ -28,14 +28,16 @@ restapi:
 
 # Configuration de la communication avec ETCD
 etcd3:
+  # Nom du nœud pour ETCD (doit être unique)
+  name: ${PATRONI_NAME}
   # Liste des serveurs ETCD du cluster.
   hosts: ${ETCD_HOSTS}
   # Protocole utilisé (https obligatoire pour la sécurité).
   protocol: ${PATRONI_ETCD3_PROTOCOL}
   # --- AUTHENTIFICATION ETCD ---
   # Utilisateur Patroni créé lors de l'initialisation d'ETCD.
-  username: ${ETCD_PATRONI_USER}
-  password: ${ETCD_PATRONI_PASSWORD}
+  # username: ${ETCD_PATRONI_USER}
+  # password: ${ETCD_PATRONI_PASSWORD}
   # --- TLS ETCD ---
   # Désactive la vérification si nécessaire (false recommandé avec CA valide).
   insecure: ${PATRONI_ETCD3_INSECURE}

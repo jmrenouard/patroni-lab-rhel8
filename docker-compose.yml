@@ -3,7 +3,7 @@ services:
     image: patroni-rhel8-etcd:latest
     container_name: etcd1
     hostname: etcd1
-    entrypoint: /bin/bash /scripts/manage/entrypoint_etcd.sh
+    entrypoint: /bin/bash -c "/usr/sbin/sshd && /bin/bash /scripts/manage/entrypoint_etcd.sh"
     environment:
       - ETCD_NAME=etcd1
       - ETCD_DATA_DIR=/etcd-data
@@ -14,7 +14,7 @@ services:
       - "${SSH_PORT_ETCD1}:${INT_SSH_PORT}"
       - "${EXT_ETCD_CLIENT_PORT_ETCD1}:${INT_ETCD_CLIENT_PORT}"
     volumes:
-      - ./certs:/certs:ro
+      - ./certs_new:/certs:rw
       - ./scripts:/scripts:ro
       - etcd1_data:/etcd-data
     networks:
@@ -24,7 +24,7 @@ services:
     image: patroni-rhel8-etcd:latest
     container_name: etcd2
     hostname: etcd2
-    entrypoint: /bin/bash /scripts/manage/entrypoint_etcd.sh
+    entrypoint: /bin/bash -c "/usr/sbin/sshd && /bin/bash /scripts/manage/entrypoint_etcd.sh"
     environment:
       - ETCD_NAME=etcd2
       - ETCD_DATA_DIR=/etcd-data
@@ -35,7 +35,7 @@ services:
       - "${SSH_PORT_ETCD2}:${INT_SSH_PORT}"
       - "${EXT_ETCD_CLIENT_PORT_ETCD2}:${INT_ETCD_CLIENT_PORT}"
     volumes:
-      - ./certs:/certs:ro
+      - ./certs_new:/certs:rw
       - ./scripts:/scripts:ro
       - etcd2_data:/etcd-data
     networks:
@@ -45,7 +45,7 @@ services:
     image: patroni-rhel8-etcd:latest
     container_name: etcd3
     hostname: etcd3
-    entrypoint: /bin/bash /scripts/manage/entrypoint_etcd.sh
+    entrypoint: /bin/bash -c "/usr/sbin/sshd && /bin/bash /scripts/manage/entrypoint_etcd.sh"
     environment:
       - ETCD_NAME=etcd3
       - ETCD_DATA_DIR=/etcd-data
@@ -56,7 +56,7 @@ services:
       - "${SSH_PORT_ETCD3}:${INT_SSH_PORT}"
       - "${EXT_ETCD_CLIENT_PORT_ETCD3}:${INT_ETCD_CLIENT_PORT}"
     volumes:
-      - ./certs:/certs:ro
+      - ./certs_new:/certs:rw
       - ./scripts:/scripts:ro
       - etcd3_data:/etcd-data
     networks:
@@ -95,9 +95,8 @@ services:
       - "${EXT_PATRONI_PORT_NODE1}:${INT_PATRONI_PORT}"
     volumes:
       - node1_data:/datas
-      - ./certs:/certs:ro
+      - ./certs_new:/certs:rw
       - ./scripts:/scripts:ro
-      - ./patroni/patroni.yml.rendered:/etc/patroni.yml:ro
     depends_on:
       - etcd1
       - etcd2
@@ -138,9 +137,8 @@ services:
       - "${EXT_PATRONI_PORT_NODE2}:${INT_PATRONI_PORT}"
     volumes:
       - node2_data:/datas
-      - ./certs:/certs:ro
+      - ./certs_new:/certs:rw
       - ./scripts:/scripts:ro
-      - ./patroni/patroni.yml.rendered:/etc/patroni.yml:ro
     depends_on:
       - etcd1
       - etcd2
@@ -181,9 +179,8 @@ services:
       - "${EXT_PATRONI_PORT_NODE3}:${INT_PATRONI_PORT}"
     volumes:
       - node3_data:/datas
-      - ./certs:/certs:ro
+      - ./certs_new:/certs:rw
       - ./scripts:/scripts:ro
-      - ./patroni/patroni.yml.rendered:/etc/patroni.yml:ro
     depends_on:
       - etcd1
       - etcd2
@@ -195,17 +192,18 @@ services:
     image: patroni-rhel8-haproxy:latest
     container_name: haproxy
     hostname: haproxy
+    command: /bin/bash -c "/usr/sbin/sshd && haproxy -f /usr/local/etc/haproxy/haproxy.cfg || tail -f /dev/null"
     depends_on:
       - node1
       - node2
       - node3
     ports:
+      - "${SSH_PORT_HAPROXY}:${INT_SSH_PORT}"
       - "${EXT_HAPROXY_RW_PORT}:${INT_HAPROXY_RW_PORT}"
       - "${EXT_HAPROXY_RO_PORT}:${INT_HAPROXY_RO_PORT}"
       - "${EXT_HAPROXY_STATS_PORT}:${INT_HAPROXY_STATS_PORT}"
     volumes:
-      - ./haproxy/haproxy.cfg.rendered:/usr/local/etc/haproxy/haproxy.cfg:ro
-      - ./certs:/certs:ro
+      - ./certs_new:/certs:rw
     env_file: .env
     networks:
       - default
@@ -214,7 +212,7 @@ services:
     image: patroni-rhel8-pgbouncer:latest
     container_name: pgbouncer
     hostname: pgbouncer
-    entrypoint: /bin/bash /scripts/manage/entrypoint_node.sh /usr/bin/pgbouncer /etc/pgbouncer/pgbouncer.ini
+    entrypoint: /bin/bash -c "/usr/sbin/sshd && /bin/bash /scripts/manage/entrypoint_node.sh /usr/bin/pgbouncer /etc/pgbouncer/pgbouncer.ini || tail -f /dev/null"
     user: root
     env_file: .env
     environment:
@@ -223,11 +221,11 @@ services:
       - POSTGRES_SERVER_CERT=/etc/patroni/certs/postgresql-server.crt
       - POSTGRES_SERVER_KEY=/etc/patroni/certs/postgresql-server.key
     ports:
+      - "${SSH_PORT_PGBOUNCER}:${INT_SSH_PORT}"
       - "${EXT_PGBOUNCER_PORT}:${INT_PGBOUNCER_PORT}"
     volumes:
-      - ./certs:/certs:ro
+      - ./certs_new:/certs:rw
       - ./scripts:/scripts:ro
-      - ./pgbouncer/pgbouncer.ini.rendered:/etc/pgbouncer/pgbouncer.ini:ro
       - ./pgbouncer/userlist.txt:/etc/pgbouncer/userlist.txt:rw
     depends_on:
       - haproxy

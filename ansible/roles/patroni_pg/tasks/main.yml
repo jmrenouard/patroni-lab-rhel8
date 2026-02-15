@@ -1,0 +1,38 @@
+---
+# - name: Installer PostgreSQL 17 et Patroni
+#   dnf:
+#     name:
+#       - postgresql17-server
+#       - postgresql17-contrib
+#       - patroni
+#       - patroni-etcd
+#     state: present
+
+- name: Créer le répertoire de données PostgreSQL
+  file:
+    path: "{{ postgres_data_dir }}"
+    state: directory
+    owner: postgres
+    group: postgres
+    mode: '0700'
+
+- name: Créer le répertoire de socket PostgreSQL
+  file:
+    path: /var/run/postgresql
+    state: directory
+    owner: postgres
+    group: postgres
+    mode: '0775'
+
+- name: Déployer la configuration patroni.yml
+  template:
+    src: patroni.yml.j2
+    dest: /etc/patroni.yml
+    owner: postgres
+    group: postgres
+    mode: '0640'
+  notify: redémarrer patroni
+
+- name: Informer sur le démarrage
+  debug:
+    msg: "PostgreSQL et Patroni configurés. Le démarrage initial sera géré par supervisor (node_entrypoint)."

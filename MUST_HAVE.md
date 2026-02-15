@@ -22,7 +22,7 @@
 ## 🌍 Environnement & Portabilité
 - **Air-Gap Ready** : Fourniture de scripts d'extraction :
     - Extraction des URLs RPM pour installation hors-ligne.
-    - Création de paquets PIP Wheel (incluant `patroni-etcd3` et `urllib3<2.0.0`).
+    - Création de paquets PIP Wheel pour Patroni.
 - **Localisation** : Fichiers de configuration (`patroni.yml`, `etcd.yml`) intégralement documentés en **Français**.
 
 ## 🏢 Architecture & Topologie

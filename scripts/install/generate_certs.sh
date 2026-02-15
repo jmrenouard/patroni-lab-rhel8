@@ -2,8 +2,8 @@
 # generate_certs.sh
 # Génération de certificats TLS avec SAN (Subject Alternative Names) pour le cluster.
 
-CERT_DIR="./certs"
-mkdir -p $CERT_DIR
+CERT_DIR="${CERT_DIR:-./certs}"
+mkdir -p "$CERT_DIR"
 
 # Charger les variables d'environnement si le fichier .env existe
 if [ -f .env ]; then

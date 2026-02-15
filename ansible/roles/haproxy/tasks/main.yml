@@ -1,0 +1,30 @@
+# - name: Installer HAProxy
+#   dnf:
+#     name: haproxy
+#     state: present
+
+- name: Créer le répertoire de certificats HAProxy
+  file:
+    path: /etc/haproxy/certs
+    state: directory
+    mode: '0755'
+
+- name: Générer le fichier PEM combiné pour HAProxy
+  delegate_to: localhost
+  shell: |
+    cat {{ cert_dir }}/{{ inventory_hostname }}.crt {{ cert_dir }}/{{ inventory_hostname }}.key > {{ cert_dir }}/haproxy.pem
+  run_once: true
+
+- name: Distribuer le PEM HAProxy
+  copy:
+    src: "{{ cert_dir }}/haproxy.pem"
+    dest: "/etc/haproxy/certs/haproxy.pem"
+    mode: '0600'
+  notify: redémarrer haproxy
+
+- name: Déployer la configuration haproxy.cfg
+  template:
+    src: haproxy.cfg.j2
+    dest: /etc/haproxy/haproxy.cfg
+    mode: '0644'
+  notify: redémarrer haproxy

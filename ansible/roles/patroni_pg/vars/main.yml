@@ -1,0 +1,23 @@
+---
+scope: patroni-lab
+namespace: /db/
+patroni_restapi_port: 8008
+postgres_port: 5432
+etcd_hosts: "etcd1:2379,etcd2:2379,etcd3:2379"
+
+# Identifiants
+patroni_api_user: admin
+patroni_api_password: admin_password
+replicator_user: replicator
+replicator_password: rep_password
+postgres_user: postgres
+postgres_password: pg_password
+
+# Chemins
+postgres_data_dir: /datas/postgres
+postgres_bin_dir: /usr/pgsql-17/bin
+cacert_path: /certs/ca.crt
+patroni_cert: /certs/server.crt
+patroni_key: /certs/server.key
+pg_server_cert: /certs/server.crt
+pg_server_key: /certs/server.key

@@ -28,8 +28,12 @@ if [ "${VERIFY_CLIENT_CERT}" = "true" ]; then
     AUTH_FLAGS="--peer-client-cert-auth"
 fi
 
+# Démarrage du service SSH pour la gestion Ansible
+/usr/sbin/sshd
+
 # Construction de la commande ETCD avec les variables d'environnement
-exec /usr/bin/etcd \
+# Exécution d'ETCD (avec repli sur tail -f pour permettre l'accès Ansible en cas d'échec)
+/usr/bin/etcd \
     --name "${SAVED_NAME}" \
     --data-dir "${SAVED_DATA_DIR}" \
     --listen-client-urls "https://0.0.0.0:${INT_ETCD_CLIENT_PORT}" \
@@ -45,4 +49,4 @@ exec /usr/bin/etcd \
     --peer-cert-file "/certs/etcd-server.crt" \
     --peer-key-file "/certs/etcd-server.key" \
     --peer-trusted-ca-file "/certs/ca.crt" \
-    $AUTH_FLAGS
+    $AUTH_FLAGS || { echo "⚠️ ETCD a échoué. Maintien du conteneur pour Ansible..."; tail -f /dev/null; }

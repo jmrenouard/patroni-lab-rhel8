@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Connexion - Patroni Lab</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Outfit:wght@400;700&display=swap"
+        rel="stylesheet">
+    <style>
+        body {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            background: #0f1218;
+        }
+
+        .login-card {
+            width: 100%;
+            max-width: 400px;
+            padding: 40px;
+            text-align: center;
+        }
+
+        .login-card h1 {
+            margin-bottom: 30px;
+            font-size: 2rem;
+            background: linear-gradient(135deg, #fff 0%, #aab 100%);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            margin-top: 5px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            color: white;
+            font-size: 1rem;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 10px rgba(0, 212, 255, 0.2);
+        }
+
+        button.login-btn {
+            width: 100%;
+            padding: 14px;
+            margin-top: 10px;
+            background: var(--accent);
+            color: #000;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        button.login-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 212, 255, 0.3);
+        }
+
+        .error-msg {
+            color: #ff4d4d;
+            margin-top: 15px;
+            font-size: 0.9rem;
+            display: none;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="glass-container login-card">
+        <header>
+            <h1>Patroni <span class="badge">Lab</span></h1>
+            <p>Authentification requise</p>
+        </header>
+
+        <div style="margin-top: 30px;">
+            <div class="form-group">
+                <label>Utilisateur</label>
+                <input type="text" id="username" placeholder="root" value="root">
+            </div>
+            <div class="form-group">
+                <label>Mot de passe</label>
+                <input type="password" id="password" placeholder="••••••••" value="rootpass">
+            </div>
+            <button class="login-btn" onclick="performLogin()">Se Connecter</button>
+            <div id="error" class="error-msg">Identifiants incorrects.</div>
+        </div>
+    </div>
+
+    <script>
+        async function performLogin() {
+            const u = document.getElementById('username').value;
+            const p = document.getElementById('password').value;
+            const err = document.getElementById('error');
+
+            err.style.display = 'none';
+
+            try {
+                const r = await fetch('/api/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username: u, password: p })
+                });
+
+                if (r.ok) {
+                    const data = await r.json();
+                    localStorage.setItem('role', data.role);
+                    window.location.href = '/';
+                } else {
+                    err.style.display = 'block';
+                }
+            } catch (e) {
+                console.error(e);
+                alert("Erreur de connexion au serveur.");
+            }
+        }
+    </script>
+</body>
+
+</html>

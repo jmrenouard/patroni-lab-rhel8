@@ -30,7 +30,12 @@ Global
 | Impact sur les performances | Augmentation temporaire des IO disque et de l'utilisation CPU. | Exécuter pendant les heures de faible charge si possible. |
 
 ## Description technique:
+
+> [!NOTE]
+> **Automatisation :** Une version scriptée de cette procédure est disponible : 
+> [scripts/procedures/etcd/backup_full.sh](file:///home/jmren/GIT_REPOS/patroni-lab-rhel8/scripts/procedures/etcd/backup_full.sh)
+
 | Étape | Action | Commande | Description |
 | :--- | :--- | :--- | :--- |
-| 1 | Export du snapshot | `etcdctl snapshot save backup_$(date +%Y%m%d).db` | Capture l'état actuel de la base de données. |
-| 2 | Vérification d'intégrité | `etcdutl snapshot status backup_$(date +%Y%m%d).db -w table` | Vérifie que le fichier généré est valide et lisible. |
+| 1 | Export du snapshot | **Local/Docker :** `etcdctl snapshot save backup_$(date +%Y%m%d).db`<br>**SSH :** `ssh ${ETCD_NODE} "etcdctl snapshot save backup_$(date +%Y%m%d).db"` | Capture l'état actuel de la base de données. |
+| 2 | Vérification d'intégrité | **Local/Docker :** `etcdutl snapshot status backup_$(date +%Y%m%d).db -w table`<br>**SSH :** `ssh ${ETCD_NODE} "etcdutl snapshot status backup_$(date +%Y%m%d).db -w table"` | Vérifie que le fichier généré est valide et lisible. |

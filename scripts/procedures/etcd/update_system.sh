@@ -8,6 +8,8 @@ set -e
 PROC_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$PROC_DIR/../common.sh"
 
+check_etcdctl
+
 TARGET_ID=$1
 
 if [ -z "$TARGET_ID" ]; then
@@ -22,6 +24,7 @@ log_info "Début de la procédure : Mise à jour séquentielle etcd"
 
 # Étape 1 : Transfert du leadership
 log_info "Étape 1 : Transfert du leadership vers $TARGET_ID (si leader local)"
+# Alternative SSH : ssh ${ETCD_NODE} "etcdctl move-leader $TARGET_ID"
 etcdctl move-leader "$TARGET_ID" || log_warn "Le transfert a échoué (peut-être déjà sur le bon nœud ou erreur de connectivité)."
 
 # Étape 2 : Arrêt du service local

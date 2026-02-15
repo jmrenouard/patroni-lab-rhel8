@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Administration - Patroni Lab</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Outfit:wght@400;700&display=swap"
+        rel="stylesheet">
+</head>
+
+<body>
+    <div class="glass-container">
+        <header>
+            <h1>Console <span class="badge">Administration</span></h1>
+            <p>Configuration de la Plateforme et Interrogation</p>
+        </header>
+
+        <nav class="nav-bar">
+            <a href="/" class="nav-link">Tableau de Bord</a>
+            <a href="/etcd" class="nav-link">ETCD</a>
+            <a href="/patroni" class="nav-link">Patroni/Postgres</a>
+            <a href="/haproxy" class="nav-link">HAProxy</a>
+            <a href="/pgbouncer" class="nav-link">PgBouncer</a>
+            <a href="/audit" class="nav-link">Audit</a>
+            <a href="/admin" class="nav-link active">Admin ⚙️</a>
+            <button class="logout-btn" onclick="logout()">Déconnexion 🚪</button>
+        </nav>
+
+        <main>
+            <section class="diagnostic-container">
+                <h3>⚙️ Configuration de l'Interrogation</h3>
+                <p style="color: var(--text-dim); margin-bottom: 20px;">Définissez si l'application doit utiliser Docker
+                    localement ou interroger des composants via le réseau.</p>
+
+                <form id="platform-config-form" class="admin-form"
+                    onsubmit="event.preventDefault(); savePlatformConfig();">
+                    <div class="admin-section">
+                        <div class="form-group">
+                            <label for="mode">Mode Opérationnel</label>
+                            <select id="mode" name="mode">
+                                <option value="docker">Docker Local (Exec)</option>
+                                <option value="network">Réseau Uniquement (API/TCP)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="admin-grid"
+                        style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px; margin-top: 20px;">
+                        <div class="admin-section" style="display: flex; flex-direction: column; border: none;">
+                            <h4 style="margin-bottom: 15px; color: var(--accent);">📡 ETCD</h4>
+                            <div class="form-group">
+                                <label for="etcd_ip">IP / Hostname</label>
+                                <input type="text" id="etcd_ip" name="etcd_ip" placeholder="localhost">
+                            </div>
+                            <div class="form-group">
+                                <label for="etcd_port">Port Client</label>
+                                <input type="text" id="etcd_port" name="etcd_port" placeholder="2379">
+                            </div>
+                        </div>
+
+                        <div class="admin-section" style="display: flex; flex-direction: column; border: none;">
+                            <h4 style="margin-bottom: 15px; color: var(--accent);">🐘 Patroni</h4>
+                            <div class="form-group">
+                                <label for="patroni_ip">IP / Hostname</label>
+                                <input type="text" id="patroni_ip" name="patroni_ip" placeholder="localhost">
+                            </div>
+                            <div class="form-group">
+                                <label for="patroni_port">Port API</label>
+                                <input type="text" id="patroni_port" name="patroni_port" placeholder="8008">
+                            </div>
+                        </div>
+
+                        <div class="admin-section" style="display: flex; flex-direction: column; border: none;">
+                            <h4 style="margin-bottom: 15px; color: var(--accent);">🌐 HAProxy</h4>
+                            <div class="form-group">
+                                <label for="haproxy_ip">IP / Hostname</label>
+                                <input type="text" id="haproxy_ip" name="haproxy_ip" placeholder="localhost">
+                            </div>
+                            <div class="form-group">
+                                <label for="haproxy_port">Port Stats</label>
+                                <input type="text" id="haproxy_port" name="haproxy_port" placeholder="8404">
+                            </div>
+                        </div>
+
+                        <div class="admin-section" style="display: flex; flex-direction: column; border: none;">
+                            <h4 style="margin-bottom: 15px; color: var(--accent);">🧱 PgBouncer</h4>
+                            <div class="form-group">
+                                <label for="pgbouncer_ip">IP / Hostname</label>
+                                <input type="text" id="pgbouncer_ip" name="pgbouncer_ip" placeholder="localhost">
+                            </div>
+                            <div class="form-group">
+                                <label for="pgbouncer_port">Port TCP</label>
+                                <input type="text" id="pgbouncer_port" name="pgbouncer_port" placeholder="6432">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="admin-actions">
+                        <button type="submit" class="batch-btn primary" id="save-platform-btn">💾 Enregistrer la
+                            Configuration</button>
+                    </div>
+                </form>
+            </section>
+        </main>
+    </div>
+
+    <script src="/static/app.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,25 @@
+# - name: Installer PgBouncer
+#   dnf:
+#     name: pgbouncer
+#     state: present
+
+- name: Créer le répertoire de configuration
+  file:
+    path: /etc/pgbouncer
+    state: directory
+    mode: '0755'
+
+- name: Déployer pgbouncer.ini
+  template:
+    src: pgbouncer.ini.j2
+    dest: /etc/pgbouncer/pgbouncer.ini
+    mode: '0644'
+  notify: redémarrer pgbouncer
+
+- name: Créer le fichier userlist.txt initial
+  copy:
+    content: '"{{ postgres_user }}" "{{ postgres_password }}"'
+    dest: /etc/pgbouncer/userlist.txt
+    mode: '0600'
+    owner: pgbouncer
+  notify: redémarrer pgbouncer

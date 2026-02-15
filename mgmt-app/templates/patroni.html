@@ -23,6 +23,8 @@
             <a href="/patroni" class="nav-link active">Patroni/Postgres</a>
             <a href="/haproxy" class="nav-link">HAProxy</a>
             <a href="/pgbouncer" class="nav-link">PgBouncer</a>
+            <a href="/audit" class="nav-link">Audit</a>
+            <button class="logout-btn" onclick="logout()">Déconnexion 🚪</button>
         </nav>
 
         <section class="control-bar">
@@ -46,7 +48,9 @@
                 <div class="control-bar" style="margin-top: 1rem; background: rgba(255,255,255,0.01);">
                     <div class="batch-group">
                         <button class="batch-btn primary" onclick="switchoverCluster()">🔄 Switchover (Bascule)</button>
-                        <p style="font-size: 0.75rem; color: var(--text-dim);">Changer le noeud leader du cluster.</p>
+                        <button class="batch-btn" onclick="viewDiagnostics('patroni')">🔍 Diagnostique Patroni</button>
+                        <p style="font-size: 0.75rem; color: var(--text-dim);">Changer le noeud leader ou inspecter
+                            l'état détaillé.</p>
                     </div>
                     <div class="batch-group">
                         <button class="batch-btn" onclick="toggleMaintenance('on')">⏸️ Activer Maintenance</button>
@@ -57,9 +61,21 @@
                 </div>
             </section>
 
+            <section class="diagnostic-container" id="config-section">
+                <h3>⚙️ Configuration Patroni (Dynamique)</h3>
+                <div class="config-editor-container">
+                    <textarea id="config-editor" class="config-textarea"
+                        spellcheck="false">Chargement de la configuration...</textarea>
+                    <div style="text-align: right;">
+                        <button class="batch-btn primary" id="save-config-btn" onclick="saveClusterConfig()">💾
+                            Appliquer la Configuration</button>
+                    </div>
+                </div>
+            </section>
+
             <section class="diagnostic-container">
                 <h3>🔍 Diagnostic Avancé</h3>
-                <pre class="diagnostic-output" id="diag-output">Chargement des diagnostics...</pre>
+                <div class="diagnostic-output" id="diag-output">Chargement des diagnostics...</div>
             </section>
         </main>
     </div>

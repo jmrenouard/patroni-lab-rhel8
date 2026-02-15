@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Configuration commune pour les scripts de procédures etcd
+# Configuration commune pour les scripts de procédures
 
 # 1. Chargement de l'environnement
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -46,5 +46,5 @@ check_root() {
 }
 
 # Initialisation
-check_etcdctl
+# check_etcdctl  # Retiré de l'initialisation globale pour permettre l'utilisation par d'autres composants
 # check_root

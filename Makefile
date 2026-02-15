@@ -13,7 +13,7 @@ COMPOSE_FILE = docker-compose.yml
 	stress-test cleanup test-pgbouncer test-etcd test-patroni \
 	test-haproxy verify big-test install-tools rebuild-all \
 	up-etcd down-etcd etcd build-base build-etcd build-postgres \
-	build-haproxy build-pgbouncer
+	build-haproxy build-pgbouncer ansible-deploy ansible-verify ansible-all
 
 help:
 	@echo "=========================================================="
@@ -61,6 +61,11 @@ help:
 	@echo "  make install-tools - Install local management tools"
 	@echo "  make check-env     - Verify local environment prerequisites"
 	@echo "  make setup-pgbouncer - Configure PgBouncer instances"
+	@echo ""
+	@echo "🤖 Ansible Orchestration (Alternative):"
+	@echo "  make ansible-deploy - Deploy full cluster using Ansible"
+	@echo "  make ansible-verify - Verify cluster using Ansible Playbook"
+	@echo "  make ansible-all    - Run Ansible deployment and verification"
 	@echo "=========================================================="
 
 gen-ssh:
@@ -71,7 +76,7 @@ gen-ssh:
 
 gen-certs:
 	@echo "🔐 Génération des certificats SSL/TLS..."
-	@./scripts/install/generate_certs.sh
+	@CERT_DIR=certs_new ./scripts/install/generate_certs.sh
 
 extract-rpms:
 	@echo "📦 Extraction des RPMs..."
@@ -190,6 +195,17 @@ big-test:
 	@chmod +x scripts/install/*.sh
 	@chmod +x scripts/tests/*.sh
 	@./scripts/manage/big_test.sh
+
+# --- ANSIBLE ORCHESTRATION ---
+ansible-deploy:
+	@echo "🤖 Lancement du déploiement Ansible..."
+	@cd ansible && ansible-playbook site.yml
+
+ansible-verify:
+	@echo "🤖 Lancement de la validation Ansible..."
+	@cd ansible && ansible-playbook verify.yml
+
+ansible-all: ansible-deploy ansible-verify
 
 # --- GESTION MGMT-APP (GO) ---
 mgmt-build:

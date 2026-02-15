@@ -1,5 +1,9 @@
 # Réinitialisation d'un Nœud Zombie
 
+> [!NOTE]
+> **Automatisation :** Une version scriptée de cette procédure est disponible (à lancer sur un nœud sain) : 
+> [scripts/procedures/etcd/member_reset_zombie.sh](file:///home/jmren/GIT_REPOS/patroni-lab-rhel8/scripts/procedures/etcd/member_reset_zombie.sh)
+
 ## Objectifs:
 Forcer la réintégration d'un membre dont le répertoire de données est corrompu ou qui a perdu sa synchronisation avec le cluster de manière irrécupérable.
 

@@ -1,0 +1,25 @@
+---
+# - name: Installer etcd
+#   dnf:
+#     name: etcd
+#     state: present
+
+- name: Déployer la configuration etcd.yml
+  template:
+    src: etcd.yml.j2
+    dest: /etc/etcd.yml
+    mode: '0644'
+  notify: redémarrer etcd
+
+- name: S'assurer que le répertoire de données existe
+  file:
+    path: "{{ etcd_data_dir | default('/etcd-data') }}"
+    state: directory
+    owner: root
+    group: root
+    mode: '0700'
+
+# Note: Dans les conteneurs, le démarrage est géré par supervisor
+- name: Informer sur le démarrage
+  debug:
+    msg: "ETCD configuré. Le service sera (re)démarré par supervisor."

@@ -12,11 +12,9 @@ ENV PATRONI_ETCD3_INSECURE=true \
     PATH="/usr/pgsql-17/bin:$PATH"
 
 # Install PostgreSQL and Patroni
-RUN dnf install -y postgresql${PSQL_VERSION}-server patroni-4.1.0 patroni-etcd && \
+RUN dnf install -y postgresql${PSQL_VERSION}-server patroni-4.1.0 patroni-etcd etcd && \
     dnf clean all
 
-# Install ETCD v3 python client (force urllib3<2.0.0 for etcd3 compatibility)
-RUN /usr/bin/python3.12 -m pip install --no-cache-dir "urllib3<2.0.0" "patroni[etcd3]"
 
 # Setup PostgreSQL directories
 RUN mkdir -p /datas/postgres /var/run/postgresql && \

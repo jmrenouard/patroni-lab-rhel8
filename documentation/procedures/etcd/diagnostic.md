@@ -1,5 +1,9 @@
 # Diagnostic et Identification Leader
 
+> [!NOTE]
+> **Automatisation :** Une version scriptée de cette procédure est disponible : 
+> [scripts/procedures/etcd/diagnostic.sh](file:///home/jmren/GIT_REPOS/patroni-lab-rhel8/scripts/procedures/etcd/diagnostic.sh)
+
 ## Objectifs:
 Évaluer instantanément la santé du cluster, vérifier que le quorum est respecté et identifier quel nœud assure le rôle de Leader.
 

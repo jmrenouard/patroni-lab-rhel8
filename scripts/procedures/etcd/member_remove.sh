@@ -8,6 +8,8 @@ set -e
 PROC_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$PROC_DIR/../common.sh"
 
+check_etcdctl
+
 MEMBER_ID=$1
 
 if [ -z "$MEMBER_ID" ]; then
@@ -22,6 +24,7 @@ log_info "Début de la procédure : Retrait du membre $MEMBER_ID"
 
 # Étape 2 : Retrait logique
 log_info "Étape 2 : Retrait logique du membre du cluster"
+# Alternative SSH : ssh ${ETCD_NODE} "etcdctl member remove $MEMBER_ID"
 etcdctl member remove "$MEMBER_ID"
 
 # Étape 3 : Arrêt physique

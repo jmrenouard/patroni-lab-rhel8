@@ -1,5 +1,9 @@
 # Mise à jour Système ou Binaires
 
+> [!NOTE]
+> **Automatisation :** Une version scriptée de cette procédure est disponible : 
+> [scripts/procedures/etcd/update_system.sh](file:///home/jmren/GIT_REPOS/patroni-lab-rhel8/scripts/procedures/etcd/update_system.sh)
+
 ## Objectifs:
 Appliquer des patchs de sécurité ou monter en version les binaires etcd tout en maintenant la haute disponibilité du service.
 

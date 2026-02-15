@@ -1,0 +1,33 @@
+all:
+  children:
+    etcd_cluster:
+      hosts:
+        etcd1:
+          ansible_port: "{{ lookup('env', 'SSH_PORT_ETCD1') | default(2221, true) }}"
+        etcd2:
+          ansible_port: "{{ lookup('env', 'SSH_PORT_ETCD2') | default(2222, true) }}"
+        etcd3:
+          ansible_port: "{{ lookup('env', 'SSH_PORT_ETCD3') | default(2223, true) }}"
+    pg_cluster:
+      hosts:
+        node1:
+          ansible_port: "{{ lookup('env', 'SSH_PORT_NODE1') | default(2211, true) }}"
+        node2:
+          ansible_port: "{{ lookup('env', 'SSH_PORT_NODE2') | default(2212, true) }}"
+        node3:
+          ansible_port: "{{ lookup('env', 'SSH_PORT_NODE3') | default(2213, true) }}"
+    haproxy:
+      hosts:
+        haproxy:
+          ansible_port: "{{ lookup('env', 'SSH_PORT_HAPROXY') | default(2231, true) }}"
+    pgbouncer:
+      hosts:
+        pgbouncer:
+          ansible_port: "{{ lookup('env', 'SSH_PORT_PGBOUNCER') | default(2232, true) }}"
+
+  vars:
+    ansible_host: 127.0.0.1
+    ansible_user: root
+    ansible_ssh_pass: rootpass
+    ansible_python_interpreter: /usr/bin/python3
+    ansible_ssh_extra_args: '-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null'

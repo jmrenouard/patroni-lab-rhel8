@@ -1,0 +1,42 @@
+# Configuration ETCD - {{ inventory_hostname }} - Documentée en Français
+# ====================================================
+
+# Nom unique du membre au sein du cluster.
+name: {{ inventory_hostname }}
+
+# Répertoire de stockage des données ETCD.
+data-dir: {{ etcd_data_dir | default('/etcd-data') }}
+
+# --- URL CLIENTS ---
+# URL sur laquelle ETCD écoute pour les requêtes clients (Patroni).
+listen-client-urls: https://0.0.0.0:2379
+# URL annoncée aux clients pour se connecter à ce membre.
+advertise-client-urls: https://{{ inventory_hostname }}:2379
+
+# --- URL PAIRS (Peer) ---
+# URL sur laquelle ETCD écoute pour la communication entre membres du cluster.
+listen-peer-urls: https://0.0.0.0:2380
+# URL annoncée aux autres membres du cluster.
+initial-advertise-peer-urls: https://{{ inventory_hostname }}:2380
+
+# --- FORMATION DU CLUSTER ---
+# Liste de tous les membres initiaux du cluster pour le bootstrap.
+initial-cluster: etcd1=https://etcd1:2380,etcd2=https://etcd2:2380,etcd3=https://etcd3:2380
+# État initial du cluster (new pour une nouvelle création).
+initial-cluster-state: new
+# Jeton unique pour identifier le cluster pendant le bootstrap.
+initial-cluster-token: etcd-cluster-1
+
+# --- SÉCURITÉ TLS CLIENT ---
+client-transport-security:
+  cert-file: /certs/etcd-server.crt
+  key-file: /certs/etcd-server.key
+  client-cert-auth: {{ etcd_verify_client | default('false') }}
+  trusted-ca-file: /certs/ca.crt
+
+# --- SÉCURITÉ TLS PAIR (Membres) ---
+peer-transport-security:
+  cert-file: /certs/etcd-server.crt
+  key-file: /certs/etcd-server.key
+  peer-client-cert-auth: {{ etcd_verify_client | default('false') }}
+  trusted-ca-file: /certs/ca.crt

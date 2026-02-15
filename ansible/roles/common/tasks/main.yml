@@ -1,0 +1,73 @@
+---
+- name: Créer les répertoires distants
+  become: yes
+  file:
+    path: "{{ item }}"
+    state: directory
+    mode: '0755'
+  loop:
+    - /certs
+    - /etc/patroni/certs
+
+- name: Distribuer les certificats individuels
+  become: yes
+  copy:
+    src: "{{ cert_dir }}/{{ item }}"
+    dest: "/certs/{{ item }}"
+    mode: "0644"
+  loop:
+    - ca.crt
+    - ca.key
+    - etcd-server.crt
+    - etcd-server.key
+    - etcd-client.crt
+    - etcd-client.key
+    - patroni-api.crt
+    - patroni-api.key
+    - postgresql-server.crt
+    - postgresql-server.key
+    - postgresql-client.crt
+    - postgresql-client.key
+    - pgbouncer.crt
+    - pgbouncer.key
+    - haproxy.pem
+
+- name: Sécuriser les clés privées sur les nœuds
+  become: yes
+  shell: "chmod 600 /certs/*.key"
+
+- name: Créer les liens symboliques pour la compatibilité dans /etc/patroni/certs
+  become: yes
+  file:
+    src: "/certs/{{ item.src }}"
+    dest: "/etc/patroni/certs/{{ item.dest }}"
+    state: link
+    force: yes
+  loop:
+    - { src: "ca.crt", dest: "ca.crt" }
+    - { src: "etcd-server.crt", dest: "etcd-server.crt" }
+    - { src: "etcd-server.key", dest: "etcd-server.key" }
+    - { src: "etcd-client.crt", dest: "etcd-client.crt" }
+    - { src: "etcd-client.key", dest: "etcd-client.key" }
+    - { src: "patroni-api.crt", dest: "patroni-api.crt" }
+    - { src: "patroni-api.key", dest: "patroni-api.key" }
+    - { src: "postgresql-server.crt", dest: "postgresql-server.crt" }
+    - { src: "postgresql-server.key", dest: "postgresql-server.key" }
+    - { src: "postgresql-client.crt", dest: "postgresql-client.crt" }
+    - { src: "postgresql-client.key", dest: "postgresql-client.key" }
+
+- name: Créer les liens supplémentaires pour les consommations directes dans /certs
+  become: yes
+  file:
+    src: "postgresql-server.crt"
+    dest: "/certs/server.crt"
+    state: link
+    force: yes
+
+- name: Créer le lien pour la clé serveur dans /certs
+  become: yes
+  file:
+    src: "postgresql-server.key"
+    dest: "/certs/server.key"
+    state: link
+    force: yes

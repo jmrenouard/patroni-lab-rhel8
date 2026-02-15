@@ -8,6 +8,8 @@ set -e
 PROC_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$PROC_DIR/../common.sh"
 
+check_etcdctl
+
 BACKUP_FULL_DB="${1:-backup_full.db}"
 
 if [ ! -f "$BACKUP_FULL_DB" ]; then
@@ -38,4 +40,5 @@ LOG_FILE="etcd_incremental_$(date +%Y%m%d_%H%M%S).log"
 log_info "Étape 2 : Capture du flux incremental vers $LOG_FILE (Appuyez sur Ctrl+C pour arrêter)"
 log_info "Commande : etcdctl watch / --prefix --rev=$((LAST_REV + 1))"
 
+# Alternative SSH : ssh ${ETCD_NODE} "etcdctl watch / --prefix --rev=$((LAST_REV + 1))"
 etcdctl watch / --prefix --rev=$((LAST_REV + 1)) > "$LOG_FILE"

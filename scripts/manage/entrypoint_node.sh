@@ -9,6 +9,11 @@ set -e
 LOCAL_CERT_DIR="/etc/patroni/certs"
 mkdir -p "$LOCAL_CERT_DIR"
 
+# Démarrage du service SSH pour la gestion Ansible (uniquement si root)
+if [ "$(id -u)" = "0" ]; then
+    /usr/sbin/sshd
+fi
+
 echo "🔐 [ENTRYPOINT] Préparation des certificats..."
 
 # Copier les certificats du montage /certs vers le dossier local
@@ -22,8 +27,8 @@ if [ -d "/certs" ]; then
     # Toujours s'assurer que postgres peut lire les certificats
     chown -R postgres:postgres /etc/patroni/certs
     chmod 755 /etc/patroni/certs
-    chmod 600 /etc/patroni/certs/*.key
-    chmod 644 /etc/patroni/certs/*.crt
+    chmod 600 /etc/patroni/certs/*.key 2>/dev/null || true
+    chmod 644 /etc/patroni/certs/*.crt 2>/dev/null || true
 
     echo "✅ [ENTRYPOINT] Certificats préparés dans /etc/patroni/certs (Propriétaire: postgres)"
 else

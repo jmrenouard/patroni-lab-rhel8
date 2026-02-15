@@ -1,0 +1,72 @@
+# Patroni Configuration - {{ inventory_hostname }} - Documentée en Français
+# ===============================================
+
+scope: {{ scope }}
+namespace: {{ namespace }}
+name: {{ inventory_hostname }}
+
+restapi:
+  listen: 0.0.0.0:{{ patroni_restapi_port }}
+  connect_address: {{ inventory_hostname }}:{{ patroni_restapi_port }}
+  username: {{ patroni_api_user }}
+  password: {{ patroni_api_password }}
+  certfile: {{ patroni_cert }}
+  keyfile: {{ patroni_key }}
+  cafile: {{ cacert_path }}
+  verify_client: optional
+
+etcd3:
+  hosts: {{ etcd_hosts }}
+  protocol: https
+  cacert: {{ cacert_path }}
+  cert: {{ patroni_cert }}
+  key: {{ patroni_key }}
+
+bootstrap:
+  dcs:
+    ttl: 30
+    loop_wait: 10
+    retry_timeout: 10
+    maximum_lag_on_failover: 1048576
+    slots:
+      pg_failover_slot:
+        type: physical
+    postgresql:
+      use_pg_rewind: true
+      parameters:
+        wal_level: replica
+        max_wal_senders: 10
+        max_replication_slots: 10
+        hot_standby: "on"
+  initdb: 
+  - encoding: UTF8
+  - data-checksums
+
+postgresql:
+  listen: 0.0.0.0:{{ postgres_port }}
+  connect_address: {{ inventory_hostname }}:{{ postgres_port }}
+  data_dir: {{ postgres_data_dir }}
+  bin_dir: {{ postgres_bin_dir }}
+  authentication:
+    replication:
+      username: {{ replicator_user }}
+      password: {{ replicator_password }}
+    superuser:
+      username: {{ postgres_user }}
+      password: {{ postgres_password }}
+  parameters:
+    unix_socket_directories: '/var/run/postgresql'
+    ssl: "on"
+    ssl_cert_file: {{ pg_server_cert }}
+    ssl_key_file: {{ pg_server_key }}
+    ssl_ca_file: {{ cacert_path }}
+  pg_hba:
+    - host    all             postgres         127.0.0.1/32            md5
+    - hostssl all             all              0.0.0.0/0               md5
+    - hostssl replication     all              0.0.0.0/0               md5
+
+tags:
+  nosql: false
+  clonefrom: false
+  dc: {{ dc | default('dc1') }}
+  failover_priority: {{ failover_priority | default(50) }}

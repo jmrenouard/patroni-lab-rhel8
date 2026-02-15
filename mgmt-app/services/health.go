@@ -18,19 +18,25 @@ import (
 
 // HealthService gère la vérification de l'état des différents composants du cluster.
 type HealthService struct {
-	client *http.Client
-	Docker *DockerService
+	client  *http.Client
+	Docker  *DockerService
+	Config  *ConfigService
+	certDir string
 }
 
 // NewHealthService initialise un service de santé avec mTLS pour ETCD et Patroni.
-func NewHealthService(docker *DockerService) *HealthService {
+func NewHealthService(docker *DockerService, config *ConfigService) *HealthService {
 	// Chemins par défaut ou via ENV
 	rootPath := os.Getenv("MGMT_APP_ROOT")
-	if rootPath == "" { rootPath = ".." } // Par défaut un niveau au dessus (si lancé depuis mgmt-app)
+	if rootPath == "" { rootPath = ".." } 
 
-	certPath := fmt.Sprintf("%s/certs/etcd-client.crt", rootPath)
-	keyPath := fmt.Sprintf("%s/certs/etcd-client.key", rootPath)
-	caPath := fmt.Sprintf("%s/certs/ca.crt", rootPath)
+	certDir := fmt.Sprintf("%s/certs", rootPath)
+	if _, err := os.Stat(fmt.Sprintf("%s/certs_new", rootPath)); err == nil {
+		certDir = fmt.Sprintf("%s/certs_new", rootPath)
+	}
+	certPath := filepath.Join(certDir, "etcd-client.crt")
+	keyPath := filepath.Join(certDir, "etcd-client.key")
+	caPath := filepath.Join(certDir, "ca.crt")
 
 	// Chargement des certificats clients pour mTLS
 	cert, err := tls.LoadX509KeyPair(certPath, keyPath)
@@ -60,8 +66,21 @@ func NewHealthService(docker *DockerService) *HealthService {
 			Transport: tr,
 			Timeout:   5 * time.Second,
 		},
-		Docker: docker,
+		Docker:  docker,
+		Config:  config,
+		certDir: certDir,
 	}
+}
+
+// DoRequest expose le client mTLS pour des appels directs.
+func (s *HealthService) DoRequest(req *http.Request) (*http.Response, error) {
+	return s.client.Do(req)
+}
+
+func (s *HealthService) isEtcdLeader(jsonOut string) bool {
+	// Analyse simple du JSON d'etcdctl endpoint status
+	// On cherche "isLeader":true ou équivalent dans la sortie JSON
+	return strings.Contains(jsonOut, "\"isLeader\":true") || strings.Contains(jsonOut, "\"IS_LEADER\":true")
 }
 
 // CheckComponentHealth vérifie si un composant est joignable via HTTP(S).
@@ -97,13 +116,15 @@ func (s *HealthService) CheckTCPHealth(addr string) (bool, string) {
 	return true, "Ouvert"
 }
 
-// GetClusterStatus retourne un résumé de l'état de santé de tous les composants critiques (en parallèle).
+// GetClusterStatus retourne un résumé de l'état de santé de tous les composants critiques.
 func (s *HealthService) GetClusterStatus() map[string]interface{} {
 	status := make(map[string]interface{})
 	var mu sync.Mutex
 	var wg sync.WaitGroup
 
-	checks := map[string]func() map[string]interface{}{
+	cfg, _ := s.Config.GetConfig()
+
+	checks := map[string]func(PlatformConfig) map[string]interface{}{
 		"etcd":      s.checkEtcd,
 		"patroni":   s.checkPatroni,
 		"haproxy":   s.checkHaproxy,
@@ -112,9 +133,9 @@ func (s *HealthService) GetClusterStatus() map[string]interface{} {
 
 	wg.Add(len(checks))
 	for name, checkFn := range checks {
-		go func(n string, fn func() map[string]interface{}) {
+		go func(n string, fn func(PlatformConfig) map[string]interface{}) {
 			defer wg.Done()
-			res := fn()
+			res := fn(cfg)
 			mu.Lock()
 			status[n] = res
 			mu.Unlock()
@@ -125,119 +146,91 @@ func (s *HealthService) GetClusterStatus() map[string]interface{} {
 	return status
 }
 
-// GetDetailedDiagnostic retourne des informations poussées via Docker exec.
+// GetDetailedDiagnostic retourne des informations poussées.
 func (s *HealthService) GetDetailedDiagnostic(ctx context.Context, theme string) string {
-	if s.Docker == nil {
-		return "Docker service non disponible"
-	}
+	cfg, _ := s.Config.GetConfig()
+
+	// Si on est en mode réseau pur ou si Docker échoue, on tente via API
+	useDocker := cfg.Mode == "docker" && s.Docker != nil
 
 	switch theme {
 	case "patroni":
-		out, err := s.Docker.ExecCommand(ctx, "node1", []string{"patronictl", "-c", "/etc/patroni.yml", "list"})
-		if err != nil {
-			return fmt.Sprintf("Erreur diagnostic: %v", err)
+		if useDocker {
+			out, err := s.Docker.ExecCommand(ctx, "node1", []string{"patronictl", "-c", "/etc/patroni.yml", "list"})
+			if err == nil { return out }
 		}
-		return out
+		// Fallback API Patroni (simplifié)
+		url := fmt.Sprintf("https://%s:%s/cluster", cfg.PatroniIP, cfg.PatroniPort)
+		req, _ := http.NewRequestWithContext(ctx, "GET", url, nil)
+		req.SetBasicAuth(os.Getenv("PATRONI_API_USER"), os.Getenv("PATRONI_API_PASSWORD"))
+		resp, err := s.client.Do(req)
+		if err != nil { return "Erreur API Patroni: " + err.Error() }
+		defer resp.Body.Close()
+		body, _ := io.ReadAll(resp.Body)
+		return string(body)
+
 	case "etcd":
-		// On récupère le mot de passe root etcd depuis l'env
-		rootPass := os.Getenv("ETCD_ROOT_PASSWORD")
-		cmd := []string{"etcdctl", "--cacert=/certs/ca.crt", "--cert=/certs/etcd-client.crt", "--key=/certs/etcd-client.key", "--user=root:" + rootPass, "member", "list", "-w", "table"}
-		out, err := s.Docker.ExecCommand(ctx, "etcd1", cmd)
-		if err != nil {
-			return fmt.Sprintf("Erreur diagnostic: %v", err)
+		if useDocker {
+			rootPass := os.Getenv("ETCD_ROOT_PASSWORD")
+			cmd := []string{"etcdctl", "--cacert=/certs/ca.crt", "--cert=/certs/etcd-client.crt", "--key=/certs/etcd-client.key", "--user=root:" + rootPass, "member", "list", "-w", "table"}
+			out, err := s.Docker.ExecCommand(ctx, "etcd1", cmd)
+			if err == nil { return out }
 		}
-		return out
+		return "Diagnostic ETCD via API non implémenté (Table ASCII requise)"
+
 	case "haproxy":
-		port := os.Getenv("EXT_HAPROXY_STATS_PORT")
-		if port == "" { port = "8404" }
-		url := fmt.Sprintf("https://localhost:%s/;csv", port)
+		url := fmt.Sprintf("https://%s:%s/;csv", cfg.HAProxyIP, cfg.HAProxyPort)
 		user := os.Getenv("ADMIN_HAPROXY_USER")
 		pass := os.Getenv("ADMIN_HAPROXY_PASSWORD")
 
 		req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
-		if err != nil {
-			return fmt.Sprintf("Erreur requête stats: %v", err)
-		}
+		if err != nil { return fmt.Sprintf("Erreur requête stats: %v", err) }
 		req.SetBasicAuth(user, pass)
 
 		resp, err := s.client.Do(req)
-		if err != nil {
-			return fmt.Sprintf("Erreur récupération stats: %v", err)
-		}
+		if err != nil { return fmt.Sprintf("Erreur récupération stats: %v", err) }
 		defer resp.Body.Close()
 
-		if resp.StatusCode != http.StatusOK {
-			return fmt.Sprintf("Erreur HTTP HAProxy: %d", resp.StatusCode)
-		}
-
-		body, err := io.ReadAll(resp.Body)
-		if err != nil {
-			return fmt.Sprintf("Erreur lecture stats: %v", err)
-		}
+		body, _ := io.ReadAll(resp.Body)
 		return string(body)
+
+	case "postgres":
+		if useDocker {
+			pass := os.Getenv("POSTGRES_PASSWORD")
+			if pass == "" { pass = "pg_password" }
+			cmd := []string{"sh", "-c", fmt.Sprintf("PGPASSWORD=%s psql -h 127.0.0.1 -U postgres -d postgres -c \"SELECT name, setting FROM pg_settings WHERE name IN ('max_connections', 'shared_buffers'); SELECT count(*) as connections FROM pg_stat_activity;\"", pass)}
+			out, err := s.Docker.ExecCommand(ctx, "node1", cmd)
+			if err == nil { return "--- Diagnostic PostgreSQL (node1) ---\n" + out }
+		}
+		return "Diagnostic PostgreSQL requiert un accès direct (Docker exec ou Client SQL local non configuré)"
 	}
 
 	return "Aucun diagnostic spécifique disponible pour ce thème"
 }
 
-func (s *HealthService) checkEtcd() map[string]interface{} {
-	port := os.Getenv("EXT_ETCD_CLIENT_PORT_ETCD1")
-	if port == "" { port = "2379" }
-	url := fmt.Sprintf("https://localhost:%s/health", port)
-	
-	// Utilisation des identifiants ETCD si configurés
+func (s *HealthService) checkEtcd(cfg PlatformConfig) map[string]interface{} {
+	url := fmt.Sprintf("https://%s:%s/health", cfg.EtcdIP, cfg.EtcdPort)
 	user := os.Getenv("ETCD_PATRONI_USER")
 	pass := os.Getenv("ETCD_PATRONI_PASSWORD")
 	
 	ok, msg := s.CheckComponentHealth(url, user, pass)
 	
-	// Si vivant, on tente de savoir si c'est le leader (via etcdctl exec pour simplicité)
-	if ok && s.Docker != nil {
+	if ok && cfg.Mode == "docker" && s.Docker != nil {
 		rootPass := os.Getenv("ETCD_ROOT_PASSWORD")
 		cmd := []string{"etcdctl", "--cacert=/certs/ca.crt", "--cert=/certs/etcd-client.crt", "--key=/certs/etcd-client.key", "--user=root:" + rootPass, "endpoint", "status", "--write-out=json"}
 		out, err := s.Docker.ExecCommand(context.Background(), "etcd1", cmd)
-		if err == nil {
-			// On cherche "leader":ID et "member_id":ID dans le JSON brut pour éviter un import de struct lourd
-			if strings.Contains(out, "\"leader\"") {
-				// Extraction simple (approximation rustique mais efficace pour éviter l'overhead JSON)
-				if strings.Contains(out, "IS_LEADER") || s.isEtcdLeader(out) {
-					msg = "Cluster OK - [IS_LEADER]"
-				} else {
-					msg = "Cluster OK - [FOLLOWER]"
-				}
-			}
+		if err == nil && (strings.Contains(out, "IS_LEADER") || s.isEtcdLeader(out)) {
+			msg = "Cluster OK - [IS_LEADER]"
+		} else if err == nil {
+			msg = "Cluster OK - [FOLLOWER]"
 		}
 	}
 	
 	return map[string]interface{}{"alive": ok, "message": msg}
 }
 
-// isEtcdLeader analyse grossièrement le JSON pour comparer member_id et leader.
-func (s *HealthService) isEtcdLeader(jsonStr string) bool {
-	// Exemple: "member_id":4385152780314713765 ... "leader":4385152780314713765
-	// On cherche member_id
-	mIdx := strings.Index(jsonStr, "\"member_id\":")
-	lIdx := strings.Index(jsonStr, "\"leader\":")
-	if mIdx == -1 || lIdx == -1 { return false }
-	
-	subM := jsonStr[mIdx+12:]
-	commaM := strings.Index(subM, ",")
-	if commaM == -1 { commaM = strings.Index(subM, "}") }
-	idM := strings.TrimSpace(subM[:commaM])
-	
-	subL := jsonStr[lIdx+9:]
-	commaL := strings.Index(subL, ",")
-	if commaL == -1 { commaL = strings.Index(subL, "}") }
-	idL := strings.TrimSpace(subL[:commaL])
-	
-	return idM == idL && idM != ""
-}
-
-func (s *HealthService) checkPatroni() map[string]interface{} {
-	port := os.Getenv("EXT_PATRONI_PORT_NODE1")
-	if port == "" { port = "8008" }
-	url := fmt.Sprintf("https://localhost:%s/cluster", port)
-	
+func (s *HealthService) checkPatroni(cfg PlatformConfig) map[string]interface{} {
+	url := fmt.Sprintf("https://%s:%s/cluster", cfg.PatroniIP, cfg.PatroniPort)
 	user := os.Getenv("PATRONI_API_USER")
 	pass := os.Getenv("PATRONI_API_PASSWORD")
 	
@@ -248,41 +241,31 @@ func (s *HealthService) checkPatroni() map[string]interface{} {
 	return map[string]interface{}{"alive": ok, "message": msg}
 }
 
-func (s *HealthService) checkHaproxy() map[string]interface{} {
-	port := os.Getenv("EXT_HAPROXY_STATS_PORT")
-	if port == "" { port = "8404" }
-	url := fmt.Sprintf("https://localhost:%s/;csv", port)
+func (s *HealthService) checkHaproxy(cfg PlatformConfig) map[string]interface{} {
+	url := fmt.Sprintf("https://%s:%s/;csv", cfg.HAProxyIP, cfg.HAProxyPort)
 	user := os.Getenv("ADMIN_HAPROXY_USER")
 	pass := os.Getenv("ADMIN_HAPROXY_PASSWORD")
 	ok, msg := s.CheckComponentHealth(url, user, pass)
 	return map[string]interface{}{"alive": ok, "message": msg}
 }
 
-func (s *HealthService) checkPgbouncer() map[string]interface{} {
-	port := os.Getenv("EXT_PGBOUNCER_PORT")
-	if port == "" { port = "6432" }
-	addr := fmt.Sprintf("localhost:%s", port)
+func (s *HealthService) checkPgbouncer(cfg PlatformConfig) map[string]interface{} {
+	addr := fmt.Sprintf("%s:%s", cfg.PgBouncerIP, cfg.PgBouncerPort)
 	ok, msg := s.CheckTCPHealth(addr)
 	return map[string]interface{}{"alive": ok, "message": msg}
 }
 
 // GetCertificateStatus analyse les certificats mTLS pour suivre leur expiration.
 func (s *HealthService) GetCertificateStatus() []map[string]interface{} {
-	rootPath := os.Getenv("MGMT_APP_ROOT")
-	if rootPath == "" {
-		rootPath = ".."
-	}
-	certsDir := filepath.Join(rootPath, "certs")
-
 	var results []map[string]interface{}
-	files, err := os.ReadDir(certsDir)
+	files, err := os.ReadDir(s.certDir)
 	if err != nil {
 		return results
 	}
 
 	for _, f := range files {
 		if strings.HasSuffix(f.Name(), ".crt") {
-			certPath := filepath.Join(certsDir, f.Name())
+			certPath := filepath.Join(s.certDir, f.Name())
 			certData, err := os.ReadFile(certPath)
 			if err != nil {
 				continue

@@ -1,5 +1,9 @@
 # Gestion des Accès (RBAC)
 
+> [!NOTE]
+> **Automatisation :** Une version scriptée de cette procédure est disponible : 
+> [scripts/procedures/etcd/rbac_admin.sh](file:///home/jmren/GIT_REPOS/patroni-lab-rhel8/scripts/procedures/etcd/rbac_admin.sh)
+
 ## Objectifs:
 Mettre en place une politique de sécurité granulaire en gérant les utilisateurs, les rôles et en activant l'authentification sur le cluster.
 

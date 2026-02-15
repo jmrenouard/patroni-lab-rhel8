@@ -33,8 +33,7 @@ Les paquets Python sont installés via `pip install` depuis **PyPI (Python Packa
 ### 1. Dépendances Patroni & Cluster
 | Paquet | Source | Description |
 | :--- | :--- | :--- |
-| `patroni[etcd3]` | PyPI | Cœur de Patroni avec support ETCD v3. |
-| `urllib3<2.0.0` | PyPI | Contrainte de version pour la compatibilité avec le client etcd3. |
+| `patroni` | PyPI | Cœur de Patroni. |
 | `supervisor` | PyPI | Gestionnaire de processus pour les conteneurs. |
 
 ### 2. Remarque sur les versions

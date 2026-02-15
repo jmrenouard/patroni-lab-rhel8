@@ -8,6 +8,8 @@ set -e
 PROC_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$PROC_DIR/../common.sh"
 
+check_etcdctl
+
 ZOMBIE_ID=$1
 NEW_NAME=$2
 PEER_URLS=$3

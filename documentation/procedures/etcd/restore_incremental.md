@@ -1,5 +1,9 @@
 # Restauration Incrémentale (Replay de log)
 
+> [!NOTE]
+> **Automatisation :** Une version scriptée de cette procédure est disponible : 
+> [scripts/procedures/etcd/restore_incremental.sh](file:///home/jmren/GIT_REPOS/patroni-lab-rhel8/scripts/procedures/etcd/restore_incremental.sh)
+
 ## Objectifs:
 Réinjecter les modifications capturées via un flux incremental après une restauration complète du cluster.
 

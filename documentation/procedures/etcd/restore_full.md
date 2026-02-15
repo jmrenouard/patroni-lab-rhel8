@@ -1,5 +1,9 @@
 # Restauration Full (Disaster Recovery)
 
+> [!NOTE]
+> **Automatisation :** Une version scriptée de cette procédure est disponible (à exécuter sur chaque nœud) : 
+> [scripts/procedures/etcd/restore_full.sh](file:///home/jmren/GIT_REPOS/patroni-lab-rhel8/scripts/procedures/etcd/restore_full.sh)
+
 ## Objectifs:
 Restaurer l'intégralité d'un cluster etcd à partir d'un fichier de snapshot suite à une perte majeure de données ou de quorum.
 

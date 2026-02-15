@@ -8,6 +8,8 @@ set -e
 PROC_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$PROC_DIR/../common.sh"
 
+check_etcdctl
+
 LOG_FILE=$1
 
 if [ -z "$LOG_FILE" ] || [ ! -f "$LOG_FILE" ]; then

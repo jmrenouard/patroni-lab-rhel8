@@ -1,0 +1,18 @@
+[req]
+distinguished_name = req_distinguished_name
+req_extensions = v3_req
+x509_extensions = v3_ca
+
+[req_distinguished_name]
+commonName = Common Name
+
+[v3_req]
+basicConstraints = CA:FALSE
+keyUsage = nonRepudiation, digitalSignature, keyEncipherment
+subjectAltName = DNS:localhost,DNS:etcd1,DNS:etcd2,DNS:etcd3,DNS:node1,DNS:node2,DNS:node3,DNS:haproxy,DNS:pgbouncer,IP:127.0.0.1
+
+[v3_ca]
+basicConstraints = CA:TRUE
+keyUsage = cRLSign, keyCertSign
+subjectKeyIdentifier = hash
+authorityKeyIdentifier = keyid:always,issuer

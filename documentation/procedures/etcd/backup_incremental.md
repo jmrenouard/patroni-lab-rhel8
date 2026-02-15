@@ -1,5 +1,9 @@
 # Sauvegarde Incrémentale
 
+> [!NOTE]
+> **Automatisation :** Une version scriptée de cette procédure est disponible : 
+> [scripts/procedures/etcd/backup_incremental.sh](file:///home/jmren/GIT_REPOS/patroni-lab-rhel8/scripts/procedures/etcd/backup_incremental.sh)
+
 ## Objectifs:
 Capturer en continu toutes les modifications (PUT/DELETE) effectuées sur le cluster etcd depuis le dernier snapshot complet.
 
