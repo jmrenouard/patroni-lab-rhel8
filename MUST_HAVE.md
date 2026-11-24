@@ -11,9 +11,9 @@
 
 ## 🏗️ Architecture & Haute Disponibilité
 - **Découplage Total** : Séparation des rôles (3 nœuds ETCD, 3 nœuds PostgreSQL/Patroni).
-- **HAProxy Hardened** :
+- **HAProxy Durci (Cible)** :
     - Équilibreur de charge avec certificats TLS propres.
-    - Utilisation du **PROXY protocol** pour préserver les IPs sources sans complexifier `pg_hba.conf`.
+    - Utilisation du **PROXY protocol** (cible à activer via `send-proxy-v2` dans `haproxy/haproxy.cfg`) pour préserver les IPs sources sans complexifier `pg_hba.conf`.
     - Deux ports TCP dédiés : 
         - **5000 (R/W)** : Pointe vers le Master (via check Patroni `/primary`).
         - **5001 (R/O)** : Pointe vers les Replicas (via check Patroni `/replica`).
@@ -29,12 +29,12 @@
 - **Multi-Datacenter** : Support natif d'une topologie asymétrique (DC1 vs Remote) avec gestion des priorités de bascule.
 - **PgBouncer** : Connection pooling obligatoire pour la montée en charge, configuré avec TLS.
 - **Séparation des Secrets** : Interdiction de partager des identifiants (ex: HAProxy ne doit pas utiliser les creds Patroni).
-- **Parétrage Total** : Tous les ports TCP doivent être modifiables via le fichier `.env`.
+- **Paramétrage Total** : Tous les ports TCP doivent être modifiables via le fichier `.env`.
 
 ## 🛠️ Maintenance & Tests
 - **Tests de Charge (Stress)** : Capacité à lancer des requêtes cycliques (threads, pauses, durée max) pour valider la stabilité.
 - **Tests Modulaires** : L'ensemble des tests **DOIT** être séparé par couche (ETCD, Patroni/PG, HAProxy) pour une analyse granulaire.
-- **Vérification Intrapri-Container** : Scripts `test_dck_xxx.sh` pour valider l'état interne si nécessaire.
+- **Vérification Intra-Conteneur** : Scripts `test_dck_xxx.sh` pour valider l'état interne si nécessaire.
 - **Vérification Automatisée** : Un script global `verify_cluster.sh` orchestre l'ensemble pour garantir le "zéro régression".
 - **Outillage Local** : Fourniture du script `scripts/install_local_tools.sh` pour permettre les diagnostics hors conteneur.
 

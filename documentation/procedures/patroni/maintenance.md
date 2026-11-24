@@ -7,7 +7,7 @@ Désactiver temporairement la gestion automatique du cluster (Failover) pour eff
 
 > [!NOTE]
 > **Automatisation :** Une version scriptée de cette procédure est disponible : 
-> [scripts/procedures/patroni/maintenance.sh](file:///home/jmren/GIT_REPOS/patroni-lab-rhel8/scripts/procedures/patroni/maintenance.sh)
+> [scripts/procedures/patroni/maintenance.sh](../../../scripts/procedures/patroni/maintenance.sh)
 
 ### 1. Activer le mode Maintenance (Pause)
 Cette commande place le cluster en mode `paused`. Patroni ne tentera plus de promouvoir de nœud ou de gérer l'état de PostgreSQL.

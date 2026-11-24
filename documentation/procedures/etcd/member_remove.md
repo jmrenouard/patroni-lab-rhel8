@@ -2,7 +2,7 @@
 
 > [!NOTE]
 > **Automatisation :** Une version scriptée de cette procédure est disponible : 
-> [scripts/procedures/etcd/member_remove.sh](file:///home/jmren/GIT_REPOS/patroni-lab-rhel8/scripts/procedures/etcd/member_remove.sh)
+> [scripts/procedures/etcd/member_remove.sh](../../../scripts/procedures/etcd/member_remove.sh)
 
 ## Objectifs:
 Retirer définitivement un membre sain du cluster etcd, par exemple lors d'un décommissionnement progressif d'un serveur.

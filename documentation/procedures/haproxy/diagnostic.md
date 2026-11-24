@@ -11,7 +11,7 @@ Vérifier que HAProxy est en mesure de router le trafic vers le Leader PostgreSQ
 
 > [!NOTE]
 > **Automatisation :** Une version scriptée de cette procédure est disponible : 
-> [scripts/procedures/haproxy/diagnostic.sh](file:///home/jmren/GIT_REPOS/patroni-lab-rhel8/scripts/procedures/haproxy/diagnostic.sh)
+> [scripts/procedures/haproxy/diagnostic.sh](../../../scripts/procedures/haproxy/diagnostic.sh)
 
 ### 1. Vérification des ports d'écoute
 Vérifier que les ports RW, RO et Stats sont ouverts.

@@ -37,4 +37,4 @@ L'interface permet de consulter les résultats des tests automatisés :
 - Accès direct aux logs filtrés des conteneurs.
 
 ---
-[Retour à la racine](../README.md)
+[Retour à l'accueil (FR)](../README.fr.md)

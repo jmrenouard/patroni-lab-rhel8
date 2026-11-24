@@ -5,7 +5,7 @@ Utiliser l'interface graphique de HAProxy pour visualiser l'état détaillé des
 
 > [!NOTE]
 > **Automatisation :** Un script d'aide pour vérifier l'accès est disponible : 
-> [scripts/procedures/haproxy/stats.sh](file:///home/jmren/GIT_REPOS/patroni-lab-rhel8/scripts/procedures/haproxy/stats.sh)
+> [scripts/procedures/haproxy/stats.sh](../../../scripts/procedures/haproxy/stats.sh)
 
 ## Accès:
 - **URL :** `https://<IP_HAPROXY>:8404/`

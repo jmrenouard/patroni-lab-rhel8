@@ -33,7 +33,7 @@ Global
 
 > [!NOTE]
 > **Automatisation :** Une version scriptée de cette procédure est disponible : 
-> [scripts/procedures/etcd/backup_full.sh](file:///home/jmren/GIT_REPOS/patroni-lab-rhel8/scripts/procedures/etcd/backup_full.sh)
+> [scripts/procedures/etcd/backup_full.sh](../../../scripts/procedures/etcd/backup_full.sh)
 
 | Étape | Action | Commande | Description |
 | :--- | :--- | :--- | :--- |

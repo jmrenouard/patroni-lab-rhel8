@@ -1,6 +1,6 @@
-# 🚀 Guide de Démarrage Rapide (Quick Start)
+# 🚀 Guide de Démarrage Rapide
 
-Ce guide vous permet de déployer et de tester rapidement le cluster PostgreSQL Haute Disponibilité sécurisé sur RHEL 8.
+Ce guide permet de déployer et de tester rapidement le cluster PostgreSQL Haute Disponibilité sécurisé sur RHEL 8.
 
 ## 📋 Prérequis
 
@@ -11,9 +11,9 @@ Avant de commencer, assurez-vous de disposer des éléments suivants :
 
 ## 🛠️ Installation en 3 étapes
 
-Copiez le fichier d'exemple et confivgurez vos variables (mot de passe, ports, etc.) :
+Le dépôt inclut déjà un fichier `.env` prêt pour le laboratoire ; si nécessaire, copiez le modèle et configurez vos variables (mots de passe, ports, etc.) :
 ```bash
-cp .env.example .env
+cp ".env example" .env
 ```
 
 ### 2. Installation des outils locaux
@@ -73,4 +73,6 @@ Pour arrêter le cluster et nettoyer les ressources :
 
 ---
 > [!TIP]
-> Pour approfondir, consultez la [Hiérarchie des Images Docker](docker_images.md) ou l'[Architecture Détaillée](architecture.md).
+> Pour approfondir, consultez la [Hiérarchie des Images Docker](docker_images.md), l'[Architecture Détaillée](architecture.md) ou la documentation Diátaxis anglaise dans [docs/](../docs/index.md).
+
+[Retour à l'accueil (FR)](../README.fr.md)
