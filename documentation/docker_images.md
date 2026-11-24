@@ -14,12 +14,12 @@ graph TD
     BASE --> HAPROXY["patroni-rhel8-haproxy:latest"]
     BASE --> PGB["patroni-rhel8-pgbouncer:latest"]
 
-    subgraph "Base Layer (OS & Tools)"
+    subgraph "Couche de Base (OS et Outils)"
         UBI
         BASE
     end
 
-    subgraph "Component Layer (Services)"
+    subgraph "Couche Composants (Services)"
         PG
         ETCD
         HAPROXY
@@ -31,18 +31,20 @@ graph TD
 
 | Image | Fichier Source | Rôle Principal & Détails Techniques |
 | :--- | :--- | :--- |
-| `patroni-rhel8-base` | `Dockerfile.base` | **Fondation** : Python 3.12, outils système, repositories PGDG/EPEL, certs SSH/CA. |
-| `patroni-rhel8-postgresql` | `Dockerfile.postgresql` | **Database** : PostgreSQL 17, Patroni 4.1.0, drivers etcd3. Géré par `supervisord`. |
-| `patroni-rhel8-etcd` | `Dockerfile.etcd` | **DCS** : ETCD 3.6. Gère le quorum. Entrypoint gérant l'auto-détection du cluster. |
-| `patroni-rhel8-haproxy` | `Dockerfile.haproxy` | **Ingress** : HAProxy gérant le routage TCP, SSL et PROXY v2. Configurée via `haproxy.cfg.rendered`. |
-| `patroni-rhel8-pgbouncer`| `Dockerfile.pgbouncer`| **Pooling** : PgBouncer géré par `supervisord`. Gère dynamiquement `userlist.txt` via script d'initialisation. |
+| `patroni-rhel8-base` | `Dockerfile.base` | **Fondation** : Python 3.12, outils système, dépôts PGDG/EPEL, clés SSH. |
+| `patroni-rhel8-postgresql` | `Dockerfile.postgresql` | **Base de données** : PostgreSQL 17, Patroni 4.1.0, client `etcd`. Géré par `supervisord`. |
+| `patroni-rhel8-etcd` | `Dockerfile.etcd` | **DCS** : etcd 3.6. Gère le quorum via `entrypoint_etcd.sh`. |
+| `patroni-rhel8-haproxy` | `Dockerfile.haproxy` | **Ingress** : HAProxy pour le routage TCP RW/RO et les statistiques HTTPS (`/certs/haproxy.pem`). |
+| `patroni-rhel8-pgbouncer`| `Dockerfile.pgbouncer`| **Pooling** : PgBouncer avec TLS client/serveur et `userlist.txt` généré depuis `.env`. |
 
-## 🚀 Processus de Build
+*(Le fichier racine `Dockerfile` constitue l'image historique tout-en-un antérieure au découpage modulaire.)*
 
-Le build est orchestré par le `Makefile` pour s'assurer que l'image de base est construite avant les composants fils.
+## 🚀 Processus de Construction
 
-1. **Base Building** : `docker build -t patroni-rhel8-base:latest -f Dockerfile.base .`
-2. **Parallel Component Building** : Les images filles sont construites en parallèle une fois la base prête.
+La construction est orchestrée par le `Makefile` afin de garantir que l'image de base est prête avant les services dépendants :
+
+1. **Construction de l'image de base** : `docker build -t patroni-rhel8-base:latest -f Dockerfile.base .`
+2. **Construction des images composants** : `make build` enchaîne `build-etcd`, `build-postgres`, `build-haproxy` et `build-pgbouncer`.
 
 ---
-[Retour à l'accueil](../README.md)
+[Retour à l'accueil (FR)](../README.fr.md)

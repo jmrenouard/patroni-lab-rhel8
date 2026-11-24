@@ -14,7 +14,7 @@ Transférer le rôle de Leader d'un nœud vers un autre de manière contrôlée 
 
 > [!NOTE]
 > **Automatisation :** Une version scriptée de cette procédure est disponible : 
-> [scripts/procedures/patroni/switchover.sh](file:///home/jmren/GIT_REPOS/patroni-lab-rhel8/scripts/procedures/patroni/switchover.sh)
+> [scripts/procedures/patroni/switchover.sh](../../../scripts/procedures/patroni/switchover.sh)
 
 ### 1. Lancement de la bascule
 Utiliser la commande interactive pour choisir la cible.

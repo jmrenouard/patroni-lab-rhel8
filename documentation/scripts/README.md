@@ -96,7 +96,20 @@ Nettoyage profond : suppression des conteneurs, volumes, réseaux, images du pro
 
 ---
 
-## 🧪 Tests de Composants (Internes/Docker)
+## 🧪 Tests de Composants (Internes/Docker) et Bascule
+
+| Script | Cible | Vérifications |
+| :--- | :--- | :--- |
+| [test_dck_etcd.sh](../../scripts/tests/test_dck_etcd.sh) | etcd (Interne) | Santé locale, membres et quorum |
+| [test_dck_patroni.sh](../../scripts/tests/test_dck_patroni.sh) | Patroni / PG | Processus `supervisord`, ports `5432`/`8008` et logs |
+| [test_dck_haproxy.sh](../../scripts/tests/test_dck_haproxy.sh) | HAProxy | Processus et statistiques locales |
+| [test_dck_pgbouncer.sh](../../scripts/tests/test_dck_pgbouncer.sh) | PgBouncer | Pooler `postgres_rw` / `postgres_ro` et stats |
+| [test_failover.sh](../../scripts/tests/test_failover.sh) | Haute Disponibilité | Arrêt du leader, élection et réintégration |
+| [test_replication_scenario.sh](../../scripts/tests/test_replication_scenario.sh) | Réplication | Scénario d'écriture et propagation réplica |
+| [test_utils.sh](../../scripts/tests/test_utils.sh) | Utilitaires | Fonctions `run_test`, diagnostics et résumé |
+| [status.sh](../../scripts/manage/status.sh) | Supervision | État multi-composants (`make status`) |
+| [entrypoint_node.sh](../../scripts/manage/entrypoint_node.sh) | Entrée conteneur | Préparation `/etc/patroni/certs` et bascule utilisateur |
+| [generate_html_report.py](../../scripts/manage/generate_html_report.py) | Reporting | Génération de rapport HTML d'audit |
 
 ---
-[Retour à l'accueil](../../README.md)
+[Retour à l'accueil (FR)](../../README.fr.md)

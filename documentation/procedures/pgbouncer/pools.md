@@ -7,7 +7,7 @@ Surveiller l'utilisation des connexions côté client et côté serveur pour opt
 
 > [!NOTE]
 > **Automatisation :** Une version scriptée de cette procédure est disponible : 
-> [scripts/procedures/pgbouncer/pools.sh](file:///home/jmren/GIT_REPOS/patroni-lab-rhel8/scripts/procedures/pgbouncer/pools.sh)
+> [scripts/procedures/pgbouncer/pools.sh](../../../scripts/procedures/pgbouncer/pools.sh)
 
 ### 1. Afficher les statistiques des pools
 Permet de voir combien de clients sont actifs, en attente (`cl_waiting`), ou combien de connexions serveurs sont ouvertes.

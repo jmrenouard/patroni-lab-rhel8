@@ -11,8 +11,7 @@ Cette procédure décrit comment appliquer des correctifs de sécurité (OS) ou 
 ## 🛠️ Description technique
 
 > [!NOTE]
-> **Automatisation :** Une version scriptée de cette procédure est disponible : 
-> [scripts/procedures/patroni/minor_upgrade.sh](file:///home/jmren/GIT_REPOS/patroni-lab-rhel8/scripts/procedures/patroni/minor_upgrade.sh)
+> **Automatisation :** Aucun script automatisé dédié (`minor_upgrade.sh`) n'est fourni actuellement ; appliquez les étapes manuelles ci-dessous nœud par nœud.
 
 ### 1. Préparation (Sur tous les nœuds)
 

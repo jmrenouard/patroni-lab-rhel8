@@ -23,7 +23,7 @@ Global (Cluster)
 
 > [!NOTE]
 > **Automatisation :** Une version scriptée de cette procédure est disponible : 
-> [scripts/procedures/patroni/diagnostic.sh](file:///home/jmren/GIT_REPOS/patroni-lab-rhel8/scripts/procedures/patroni/diagnostic.sh)
+> [scripts/procedures/patroni/diagnostic.sh](../../../scripts/procedures/patroni/diagnostic.sh)
 
 ### 1. Vue d'ensemble du Cluster
 Affiche la liste des membres, leur état, leur rôle et leur retard de réplication.

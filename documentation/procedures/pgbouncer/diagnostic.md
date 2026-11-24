@@ -10,7 +10,7 @@ S'assurer que PgBouncer accepte les connexions et transmet correctement les requ
 
 > [!NOTE]
 > **Automatisation :** Une version scriptée de cette procédure est disponible : 
-> [scripts/procedures/pgbouncer/diagnostic.sh](file:///home/jmren/GIT_REPOS/patroni-lab-rhel8/scripts/procedures/pgbouncer/diagnostic.sh)
+> [scripts/procedures/pgbouncer/diagnostic.sh](../../../scripts/procedures/pgbouncer/diagnostic.sh)
 
 ### 1. Connexion à la console d'administration
 PgBouncer dispose d'une base de données virtuelle nommée `pgbouncer` pour l'administration.

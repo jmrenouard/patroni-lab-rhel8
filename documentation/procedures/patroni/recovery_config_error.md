@@ -11,13 +11,15 @@ Récupérer un cluster Patroni/PostgreSQL qui ne démarre plus suite à une erre
 
 > [!NOTE]
 > **Automatisation :** Une version scriptée de cette procédure est disponible : 
-> [scripts/procedures/patroni/recovery_config_error.sh](file:///home/jmren/GIT_REPOS/patroni-lab-rhel8/scripts/procedures/patroni/recovery_config_error.sh)
+> [scripts/procedures/patroni/recovery_config_error.sh](../../../scripts/procedures/patroni/recovery_config_error.sh)
 
 ### 1. Arrêt de Patroni sur tous les nœuds
 S'assurer que l'orchestrateur est arrêté pour éviter toute interférence.
 
-**Local / SSH :**
+**Lab Docker (Supervisord) / Hôte nu (Systemd) :**
 ```bash
+docker exec node1 supervisorctl stop patroni
+# Ou sur hôte systemd :
 systemctl stop patroni
 ```
 
@@ -64,6 +66,8 @@ patronictl -c /etc/patroni.yml edit-config
 ### 7. Redémarrage du Cluster
 Relancer Patroni sur les nœuds, en commençant par le nœud que vous souhaitez voir devenir leader.
 ```bash
+docker exec node1 supervisorctl start patroni
+# Ou sur hôte systemd :
 systemctl start patroni
 ```
 
